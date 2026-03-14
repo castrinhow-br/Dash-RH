@@ -294,6 +294,32 @@
   }
   .suggestion-item strong { color: var(--accent); display: block; margin-bottom: 4px; font-size: 12px; }
 
+  /* ── SUGGESTIONS V2 ── */
+  .suggestion-item { cursor: default; transition: border-color .2s, transform .2s; }
+  .suggestion-item:hover { border-color: var(--border); transform: translateY(-1px); }
+  .suggestion-high { border-color: rgba(239,68,68,.15); }
+  .sug-header { display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+  .sug-icon { font-size:16px; line-height:1; }
+  .sug-title { font-family:'Syne',sans-serif; font-weight:700; font-size:12.5px; color:var(--text); flex:1; }
+  .sug-tag { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:2px 8px; border-radius:8px; white-space:nowrap; }
+  .sug-tag-red    { background:rgba(239,68,68,.12);  color:var(--red); }
+  .sug-tag-yellow { background:rgba(234,179,8,.12);  color:var(--yellow); }
+  .sug-tag-green  { background:rgba(34,197,94,.1);   color:var(--green); }
+  .sug-body { font-size:12px; color:var(--text2,#9aa3bf); line-height:1.6; margin-bottom:10px; }
+  .sug-body strong { color:var(--text); font-weight:600; }
+  .sug-meta { font-size:10px; color:var(--muted); letter-spacing:.02em; }
+
+  /* ── SCORECARD RESPONSIVE ── */
+  .scorecard-grid-wrap {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 860px) {
+    .scorecard-grid-wrap { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  }
+
   /* hidden rows in filtered view */
   tr.hidden-row { display: none; }
 </style>
@@ -554,33 +580,155 @@
     </table>
   </div>
 
+
+  <!-- ── PAINEL EM RISCO ── -->
+  <div class="section-title" style="margin-top:36px">⚠️ Colaboradores em Risco · Atenção Semanal do RH</div>
+
+  <div id="risco-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px"></div>
+
+  <div class="table-card" style="margin-bottom:28px">
+    <div class="table-header-bar">
+      <div>
+        <div class="table-title">Lista de Risco Priorizada</div>
+        <div class="table-desc-text">Ativos sem desligamento · ordenados por score de risco (prazo vencido + área crítica + sem avaliação)</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="risco-loja" onchange="buildRisco()" style="background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:12px;font-family:inherit">
+          <option value="">Todas as lojas</option>
+          <option>CAM</option><option>SLM</option><option>CAX</option><option>CAV</option>
+        </select>
+        <select id="risco-nivel" onchange="buildRisco()" style="background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:5px 10px;font-size:12px;font-family:inherit">
+          <option value="">Todos os níveis</option>
+          <option value="critico">🔴 Crítico</option>
+          <option value="atencao">🟡 Atenção</option>
+          <option value="monitorar">🟢 Monitorar</option>
+        </select>
+      </div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Risco</th>
+        <th>Colaborador</th>
+        <th>Loja</th>
+        <th>Área</th>
+        <th>Função</th>
+        <th>Admissão</th>
+        <th>Próx. Prazo</th>
+        <th>Status 45d</th>
+        <th>Status 90d</th>
+        <th>Fatores</th>
+      </tr></thead>
+      <tbody id="bodyRisco"></tbody>
+    </table>
+    <div style="padding:10px 16px;font-size:11px;color:var(--muted)">
+      Score: 🔴 Crítico = 3+ fatores · 🟡 Atenção = 2 fatores · 🟢 Monitorar = 1 fator
+    </div>
+  </div>
+
+
+  <!-- ── SCORECARD POR LOJA ── -->
+  <div class="section-title">🏪 Scorecard por Loja · Benchmark Interno</div>
+  <div id="scorecard-grid" class="scorecard-grid-wrap"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px">
+    <div class="chart-card">
+      <div class="chart-title">Retenção por Loja</div>
+      <div class="chart-desc">% de colaboradores que permaneceram após o período</div>
+      <div class="chart-wrap"><canvas id="chartScorecardRetencao" height="200"></canvas></div>
+    </div>
+    <div style="display:grid;grid-template-rows:1fr 1fr;gap:16px">
+      <div class="chart-card">
+        <div class="chart-title">Tempo Médio de Permanência</div>
+        <div class="chart-desc">Dias médios dos desligados por loja</div>
+        <div class="chart-wrap"><canvas id="chartScorecardTempo" height="120"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Iniciativa de Saída por Loja</div>
+        <div class="chart-desc">Empresa vs. Empregado</div>
+        <div class="chart-wrap"><canvas id="chartScorecardMotivo" height="120"></canvas></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── SUGESTÕES ── -->
   <div class="suggestions" id="suggestions-box">
-    <div class="suggestions-title">Sugestões de Melhoria — RH/DP DezDez</div>
+    <div class="suggestions-title">💡 Sugestões de Melhoria · RH/DP DezDez</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:22px;margin-top:-8px">Ações recomendadas com base nos dados do painel — organizadas por prioridade e impacto.</p>
+
+    <!-- Linha 1: Prioridade Alta -->
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--red);display:inline-block"></span>
+      Prioridade Alta · Ação imediata recomendada
+    </div>
+    <div class="suggestion-list" style="margin-bottom:20px">
+      <div class="suggestion-item suggestion-high">
+        <div class="sug-header">
+          <span class="sug-icon">📅</span>
+          <span class="sug-title">Painel de colaboradores em risco</span>
+          <span class="sug-tag sug-tag-red">Urgente</span>
+        </div>
+        <p class="sug-body">Cruzar colaboradores <strong>sem avaliação registrada</strong> + prazo vencido ou próximo + área com alta rotatividade. Gera uma lista priorizada para atenção semanal do RH — pode ser implementado como aba adicional neste mesmo painel.</p>
+        <div class="sug-meta">⚙️ Complexidade baixa &nbsp;·&nbsp; 📈 Impacto alto</div>
+      </div>
+      <div class="suggestion-item suggestion-high">
+        <div class="sug-header">
+          <span class="sug-icon">🚦</span>
+          <span class="sug-title">Notificação automática de vencimentos</span>
+          <span class="sug-tag sug-tag-red">Urgente</span>
+        </div>
+        <p class="sug-body">Disparar alerta automático (e-mail ou WhatsApp) ao <strong>líder responsável</strong> 10 dias antes do vencimento dos prazos de 45d e 90d. Evita desligamentos por decurso de prazo sem avaliação formal registrada.</p>
+        <div class="sug-meta">⚙️ Complexidade média &nbsp;·&nbsp; 📈 Impacto alto</div>
+      </div>
+    </div>
+
+    <!-- Linha 2: Prioridade Média -->
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--yellow);display:inline-block"></span>
+      Prioridade Média · Planejamento de curto prazo
+    </div>
+    <div class="suggestion-list" style="margin-bottom:20px">
+      <div class="suggestion-item">
+        <div class="sug-header">
+          <span class="sug-icon">📋</span>
+          <span class="sug-title">Formulário padronizado de avaliação 45/90 dias</span>
+          <span class="sug-tag sug-tag-yellow">Melhoria</span>
+        </div>
+        <p class="sug-body">A planilha não registra o <strong>resultado das avaliações</strong> para a maioria dos colaboradores. Um formulário digital (Google Forms ou similar) vinculado ao controle garantiria registro consistente de notas e potencial de retenção.</p>
+        <div class="sug-meta">⚙️ Complexidade baixa &nbsp;·&nbsp; 📈 Impacto médio</div>
+      </div>
+      <div class="suggestion-item">
+        <div class="sug-header">
+          <span class="sug-icon">📊</span>
+          <span class="sug-title">KPI de retenção por líder responsável</span>
+          <span class="sug-tag sug-tag-yellow">Melhoria</span>
+        </div>
+        <p class="sug-body">Calcular a taxa de aproveitamento por líder (Elany, Marcos David, Edileide, Viviane, Rafaela) para identificar <strong>padrões de liderança</strong> que impactam a retenção durante o período de experiência.</p>
+        <div class="sug-meta">⚙️ Complexidade baixa &nbsp;·&nbsp; 📈 Impacto médio</div>
+      </div>
+    </div>
+
+    <!-- Linha 3: Estratégico -->
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>
+      Estratégico · Médio prazo
+    </div>
     <div class="suggestion-list">
       <div class="suggestion-item">
-        <strong>📋 Formulário padronizado de avaliação 45/90 dias</strong>
-        A planilha atual não registra resultado de avaliação para a maioria dos colaboradores. Criar um formulário digital (Google Forms ou similar) integrado ao controle garantiria registro consistente de notas e potencial.
+        <div class="sug-header">
+          <span class="sug-icon">⚡</span>
+          <span class="sug-title">Análise de perfil por área com alta rotatividade</span>
+          <span class="sug-tag sug-tag-green">Estratégico</span>
+        </div>
+        <p class="sug-body">Depósito e Vendas concentram a maior parte das saídas. Comparar o <strong>perfil de contratações aprovadas × reprovadas</strong> por setor pode qualificar o processo seletivo e reduzir o turnover estrutural.</p>
+        <div class="sug-meta">⚙️ Complexidade média &nbsp;·&nbsp; 📈 Impacto alto</div>
       </div>
       <div class="suggestion-item">
-        <strong>🚦 Semáforo de prazos com notificação automática</strong>
-        Implementar gatilhos automáticos (e-mail ou WhatsApp) ao líder responsável 10 dias antes de cada vencimento de prazo (45d e 90d), evitando desligamentos sem avaliação registrada.
-      </div>
-      <div class="suggestion-item">
-        <strong>📊 KPI de retenção no período de experiência por líder</strong>
-        Calcular a taxa de aproveitamento por Líder Responsável (Elany, Rafaela, Marcos David, Edileide, Viviane) para identificar padrões de liderança que impactam a retenção inicial.
-      </div>
-      <div class="suggestion-item">
-        <strong>⚡ Análise de tempo até desligamento por área</strong>
-        Desligamentos de Depósito e Vendas concentram a maior parte das saídas. Comparar o perfil das contratações aprovadas x reprovadas por setor pode melhorar o processo seletivo.
-      </div>
-      <div class="suggestion-item">
-        <strong>🏪 Mapa de saúde por loja (Scorecard)</strong>
-        CAX foi inaugurada em 2025 com grande volume de contratações simultâneas. Comparar sua taxa de retenção com CAM (mais madura) gera benchmark interno valioso para as próximas aberturas.
-      </div>
-      <div class="suggestion-item">
-        <strong>📅 Painel de "colaboradores em risco"</strong>
-        Cruzar colaboradores sem avaliação registrada + prazo vencido ou próximo + histórico de área com alta rotatividade cria uma lista priorizada de atenção semanal para o RH.
+        <div class="sug-header">
+          <span class="sug-icon">🏪</span>
+          <span class="sug-title">Scorecard CAX × CAM como benchmark interno</span>
+          <span class="sug-tag sug-tag-green">Estratégico</span>
+        </div>
+        <p class="sug-body">CAX foi inaugurada em 2025 com grande volume de contratações simultâneas. Comparar sua taxa de retenção com CAM (mais madura) gera um <strong>benchmark interno valioso</strong> para calibrar as próximas aberturas de loja.</p>
+        <div class="sug-meta">⚙️ Complexidade baixa &nbsp;·&nbsp; 📈 Impacto médio</div>
       </div>
     </div>
   </div>
@@ -1121,7 +1269,8 @@ const ALERT_WINDOW = 10; // dias antes do vencimento
 
 function alertRow(r, prazoDate, daysLeft) {
   let dotClass='dot-green', urgText='Normal';
-  if (daysLeft <= 3)       { dotClass='dot-red';    urgText='Urgente'; }
+  if (daysLeft < 0)        { dotClass='dot-red';    urgText=`Vencido ${Math.abs(daysLeft)}d`; }
+  else if (daysLeft <= 3)  { dotClass='dot-red';    urgText='Urgente'; }
   else if (daysLeft <= 7)  { dotClass='dot-yellow'; urgText='Atenção'; }
   const color = daysLeft<=3?'var(--red)':daysLeft<=7?'var(--yellow)':'var(--green)';
   return `<tr>
@@ -1404,6 +1553,290 @@ function buildMonthly() {
 }
 
 
+// ─────────────────────────────────────────────
+//  PAINEL EM RISCO
+// ─────────────────────────────────────────────
+const AREAS_CRITICAS = ['DEPÓSITO','VENDAS','FRENTE DE LOJA'];
+
+function calcRiscoScore(r) {
+  // Quem passou dos 90 dias sem desligamento foi aprovado — não é risco
+  const today = TODAY;
+  const p90 = r.p90 ? parseDate(r.p90) : null;
+  if (p90 && p90 < today) return { score: 0, nivel: null, factors: [] };
+
+  let score = 0;
+  const factors = [];
+
+  const p45 = r.p45 ? parseDate(r.p45) : null;
+
+  // p45 vencido mas p90 ainda dentro do prazo → avaliação pendente
+  if (p45) {
+    const diff45 = Math.floor((p45 - today) / 86400000);
+    if (diff45 < 0)        { score += 2; factors.push('Aval. 45d pendente'); }
+    else if (diff45 <= 10) { score += 1; factors.push('45d próximo'); }
+  }
+  if (p90) {
+    const diff90 = Math.floor((p90 - today) / 86400000);
+    if (diff90 <= 10) { score += 1; factors.push('90d próximo'); }
+  }
+  if (r.area && AREAS_CRITICAS.includes(r.area.toUpperCase())) {
+    score += 1; factors.push('Área crítica');
+  }
+  if (!r.motivo && p45 && p45 < today) {
+    score += 1; factors.push('Sem avaliação 45d');
+  }
+
+  let nivel = 'monitorar';
+  if (score >= 4) nivel = 'critico';
+  else if (score >= 2) nivel = 'atencao';
+
+  return { score, nivel, factors };
+}
+
+function buildRisco() {
+  const d = filteredData().filter(r => !r.desligamento && !r.transferido);
+  const lojaF  = document.getElementById('risco-loja').value;
+  const nivelF = document.getElementById('risco-nivel').value;
+
+  const scored = d
+    .map(r => ({ ...r, ...calcRiscoScore(r) }))
+    .filter(r => r.score > 0)
+    .filter(r => !lojaF  || r.loja  === lojaF)
+    .filter(r => !nivelF || r.nivel === nivelF)
+    .sort((a, b) => b.score - a.score);
+
+  // KPIs
+  const criticos  = scored.filter(r => r.nivel === 'critico').length;
+  const atencao   = scored.filter(r => r.nivel === 'atencao').length;
+  const monitorar = scored.filter(r => r.nivel === 'monitorar').length;
+  const vencidos  = d.filter(r => {
+    const p90 = r.p90 ? parseDate(r.p90) : null;
+    return p90 && p90 < TODAY;
+  }).length;
+
+  document.getElementById('risco-kpis').innerHTML = [
+    { label:'🔴 Críticos',   val: criticos,  color:'red' },
+    { label:'🟡 Atenção',    val: atencao,   color:'yellow' },
+    { label:'🟢 Monitorar',  val: monitorar, color:'green' },
+    { label:'Prazo vencido', val: vencidos,  color:'purple' },
+  ].map(k => `<div class="kpi-card ${k.color}">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value">${k.val}</div>
+  </div>`).join('');
+
+  // Prazo status helper
+  function prazoStatus(dateStr) {
+    if (!dateStr) return '<span style="color:var(--muted)">—</span>';
+    const dt = parseDate(dateStr);
+    const diff = Math.floor((dt - TODAY) / 86400000);
+    if (diff < 0)       return `<span class="badge badge-emp">Vencido ${Math.abs(diff)}d</span>`;
+    if (diff <= 3)      return `<span style="color:var(--red);font-weight:700">⚠ ${diff}d</span>`;
+    if (diff <= 10)     return `<span style="color:var(--yellow);font-weight:600">${diff}d</span>`;
+    return `<span style="color:var(--muted)">${diff}d</span>`;
+  }
+
+  const tbody = document.getElementById('bodyRisco');
+  if (!scored.length) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;color:var(--muted);padding:28px">Nenhum colaborador em risco para os filtros selecionados</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = scored.map(r => {
+    const nivelLabel = r.nivel === 'critico'  ? '<span class="badge badge-emp">🔴 Crítico</span>'
+                     : r.nivel === 'atencao'  ? '<span class="badge badge-empresa">🟡 Atenção</span>'
+                     : '<span class="badge badge-ativo">🟢 Monitorar</span>';
+    const proximoPrazo = (() => {
+      const p45 = r.p45 ? parseDate(r.p45) : null;
+      const p90 = r.p90 ? parseDate(r.p90) : null;
+      const candidates = [p45, p90].filter(Boolean).filter(d => d >= TODAY);
+      if (!candidates.length) return '—';
+      const nearest = candidates.sort((a,b)=>a-b)[0];
+      const diff = Math.floor((nearest - TODAY)/86400000);
+      return diff <= 10
+        ? `<span style="color:var(--yellow);font-weight:700">${diff}d</span>`
+        : `<span>${diff}d</span>`;
+    })();
+    const factorPills = r.factors.map(f =>
+      `<span style="font-size:10px;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.06);color:var(--muted)">${f}</span>`
+    ).join(' ');
+    const adm = r.admissao ? new Date(r.admissao).toLocaleDateString('pt-BR') : '—';
+    return `<tr>
+      <td>${nivelLabel}</td>
+      <td style="font-weight:500;max-width:200px">${r.nome}</td>
+      <td><span class="badge badge-${r.loja.toLowerCase()}">${r.loja}</span></td>
+      <td style="font-size:12px">${r.area||'—'}</td>
+      <td style="font-size:12px">${normFuncao(r.funcao)||'—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${adm}</td>
+      <td>${proximoPrazo}</td>
+      <td>${prazoStatus(r.p45)}</td>
+      <td>${prazoStatus(r.p90)}</td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">${factorPills}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+//  SCORECARD POR LOJA
+// ─────────────────────────────────────────────
+let chartScorecardRetencao, chartScorecardTempo, chartScorecardMotivo;
+
+function buildScorecard() {
+  if (chartScorecardRetencao) { chartScorecardRetencao.destroy(); chartScorecardRetencao = null; }
+  if (chartScorecardTempo)    { chartScorecardTempo.destroy();    chartScorecardTempo    = null; }
+  if (chartScorecardMotivo)   { chartScorecardMotivo.destroy();   chartScorecardMotivo   = null; }
+
+  const ALL = ['CAM','SLM','CAX','CAV'];
+
+  const storeStats = ALL.map(s => {
+    const sub = rawData.filter(r => r.loja === s && !r.transferido);
+    const total    = sub.length;
+    const deslig   = sub.filter(r => r.desligamento);
+    const ativos   = sub.filter(r => !r.desligamento);
+    const empresa  = deslig.filter(r => normMotivo(r) === 'Empresa').length;
+    const empregado= deslig.filter(r => normMotivo(r) === 'Empregado').length;
+    const retencao = total ? +((ativos.length / total) * 100).toFixed(1) : 0;
+    const dias = deslig
+      .filter(r => r.admissao && parseDate(r.admissao))
+      .map(r => daysBetween(parseDate(r.admissao), parseDate(r.desligamento)));
+    const avgDias  = dias.length ? Math.round(dias.reduce((a,b)=>a+b,0)/dias.length) : 0;
+    // score: 0-100 composite
+    const scoreRetencao = retencao;
+    const scoreTempo    = Math.min(100, avgDias / 90 * 100);
+    const scoreEquil    = total ? (1 - Math.abs(empresa - empregado) / Math.max(deslig.length, 1)) * 100 : 100;
+    const composite     = Math.round((scoreRetencao * .5) + (scoreTempo * .3) + (scoreEquil * .2));
+    return { s, total, ativos: ativos.length, deslig: deslig.length, empresa, empregado, retencao, avgDias, composite };
+  });
+
+  // Scorecard cards — redesigned
+  const sorted = [...storeStats].sort((a,b) => b.composite - a.composite);
+  const rankMap = {}; sorted.forEach((s,i) => rankMap[s.s] = i+1);
+
+  document.getElementById('scorecard-grid').innerHTML = storeStats.map(st => {
+    const rank = rankMap[st.s];
+    const rankLabel = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+    const grade = st.composite >= 70 ? 'A' : st.composite >= 55 ? 'B' : st.composite >= 40 ? 'C' : 'D';
+    const gradeColor = grade === 'A' ? '#10d9a0' : grade === 'B' ? '#f5a623' : '#f04f5a';
+    const storeColor = {CAM:'#f97316',SLM:'#4f8ef7',CAX:'#a855f7',CAV:'#10d9a0'}[st.s];
+    const retColor = st.retencao>=70?'#10d9a0':st.retencao>=50?'#f5a623':'#f04f5a';
+
+    // SVG arc for composite score
+    const r = 34, cx = 44, cy = 44, stroke = 6;
+    const circ = 2 * Math.PI * r;
+    const pct = st.composite / 100;
+    const dash = pct * circ;
+    const gap  = circ - dash;
+
+    // mini bar helper
+    const bar = (val, max, color) =>
+      `<div style="height:3px;border-radius:2px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:3px">
+        <div style="height:100%;width:${Math.min(100,(val/max)*100).toFixed(1)}%;background:${color};border-radius:2px"></div>
+      </div>`;
+
+    // metric row helper
+    const metricRow = (label, valHtml, barHtml) =>
+      `<div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;gap:4px">
+          <span style="font-size:9px;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%">${label}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:rgba(255,255,255,.8);white-space:nowrap">${valHtml}</span>
+        </div>
+        ${barHtml}
+      </div>`;
+
+    return `<div style="
+        background:var(--card);
+        border:1px solid rgba(255,255,255,.07);
+        border-top:2px solid ${storeColor};
+        border-radius:14px;
+        padding:14px 12px;
+        position:relative;
+        overflow:hidden;
+        transition:transform .2s,box-shadow .2s;
+        min-width:0;
+      " onmouseenter="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 32px rgba(0,0,0,.4)'"
+         onmouseleave="this.style.transform='';this.style.boxShadow=''">
+
+      <!-- top row: store name + rank -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:${storeColor};line-height:1;letter-spacing:-.02em">${st.s}</div>
+        <div style="font-size:16px;line-height:1">${rankLabel}</div>
+      </div>
+
+      <!-- SVG arc centered -->
+      <div style="display:flex;justify-content:center;margin-bottom:14px">
+        <svg width="80" height="80">
+          <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="6"/>
+          <circle cx="40" cy="40" r="32" fill="none"
+            stroke="${storeColor}" stroke-width="6"
+            stroke-linecap="round"
+            stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
+            transform="rotate(-90 40 40)"/>
+          <text x="40" y="38" text-anchor="middle" dominant-baseline="middle"
+            font-family="'Syne',sans-serif" font-size="20" font-weight="800"
+            fill="${gradeColor}">${grade}</text>
+          <text x="40" y="54" text-anchor="middle"
+            font-family="'DM Sans',sans-serif" font-size="8.5" fill="rgba(255,255,255,.3)">${st.composite}/100</text>
+        </svg>
+      </div>
+
+      <!-- metrics -->
+      ${metricRow('Retenção', `<span style="color:${retColor}">${st.retencao}%</span>`, bar(st.retencao, 100, retColor))}
+      ${metricRow('Ativos/Total', `${st.ativos}<span style="color:rgba(255,255,255,.3)">/${st.total}</span>`, bar(st.ativos, st.total, storeColor))}
+      ${metricRow('T. médio saída', `${st.avgDias}<span style="color:rgba(255,255,255,.3)">d</span>`, bar(st.avgDias, 90, '#6b7394'))}
+
+      <!-- empresa vs empregado mini chips -->
+      <div style="display:flex;gap:5px;margin-top:4px">
+        <div style="flex:1;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.15);border-radius:7px;padding:6px 8px;text-align:center;min-width:0">
+          <div style="font-size:8.5px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;white-space:nowrap">Empresa</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#f5a623">${st.empresa}</div>
+        </div>
+        <div style="flex:1;background:rgba(240,79,90,.1);border:1px solid rgba(240,79,90,.15);border-radius:7px;padding:6px 8px;text-align:center;min-width:0">
+          <div style="font-size:8.5px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px;white-space:nowrap">Empregado</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#f04f5a">${st.empregado}</div>
+        </div>
+      </div>
+
+    </div>`;
+  }).join('');
+
+  const retencoes = storeStats.map(s => s.retencao);
+  const avgTempos = storeStats.map(s => s.avgDias);
+
+  chartScorecardRetencao = new Chart(document.getElementById('chartScorecardRetencao'), {
+    type: 'bar',
+    data: {
+      labels: ALL,
+      datasets: [{ label:'Retenção (%)', data: retencoes,
+        backgroundColor: ALL.map(s=>storeColors[s]+'99'), borderColor: ALL.map(s=>storeColors[s]),
+        borderWidth:2, borderRadius:6 }]
+    },
+    options: { plugins:{legend:{display:false}}, scales:{...baseScales, y:{...baseScales.y,max:100,ticks:{...baseScales.y.ticks,callback:v=>v+'%'}}} }
+  });
+
+  chartScorecardTempo = new Chart(document.getElementById('chartScorecardTempo'), {
+    type: 'bar',
+    data: {
+      labels: ALL,
+      datasets: [{ label:'Dias médios', data: avgTempos,
+        backgroundColor: ALL.map(s=>storeColors[s]+'66'), borderColor: ALL.map(s=>storeColors[s]),
+        borderWidth:2, borderRadius:6 }]
+    },
+    options: { plugins:{legend:{display:false}}, scales:{...baseScales, y:{...baseScales.y,ticks:{...baseScales.y.ticks,callback:v=>v+'d'}}} }
+  });
+
+  chartScorecardMotivo = new Chart(document.getElementById('chartScorecardMotivo'), {
+    type:'bar',
+    data:{
+      labels: ALL,
+      datasets:[
+        { label:'Empresa',   data:storeStats.map(s=>s.empresa),   backgroundColor:'#f59e0bcc', borderColor:'#f59e0b', borderWidth:1, borderRadius:4 },
+        { label:'Empregado', data:storeStats.map(s=>s.empregado), backgroundColor:'#ef4444cc', borderColor:'#ef4444', borderWidth:1, borderRadius:4 },
+      ]
+    },
+    options:{ plugins:{legend:{...baseLegend}}, scales:{...baseScales, x:{...baseScales.x,stacked:true}, y:{...baseScales.y,stacked:true}} }
+  });
+}
+
+
 function render() {
   buildKPIs();
   buildStoreBreakdown();
@@ -1411,6 +1844,8 @@ function render() {
   buildMonthly();
   populateAlertSelects();
   buildAlerts();
+  buildRisco();
+  buildScorecard();
   buildTransfTable();
   buildDesligTable();
 }
