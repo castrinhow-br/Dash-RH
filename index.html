@@ -336,7 +336,7 @@
     </div>
   </div>
   <div class="header-right">
-    <div class="today-badge">Ref.<span>Mar 2026</span></div>
+    <div class="today-badge">Ref.<span id="ref-badge"></span></div>
   </div>
 </header>
 
@@ -423,7 +423,7 @@
       <div id="alert-pills-45" style="display:flex;gap:6px;flex-wrap:wrap"></div>
     </div>
     <table><thead><tr>
-      <th>Urgência</th><th>Colaborador</th><th>Loja</th><th>Setor</th><th>Função</th>
+      <th>Urgência</th><th>Tipo</th><th>Colaborador</th><th>Loja</th><th>Setor</th><th>Função</th>
       <th>Admissão</th><th>Vencimento 45d</th><th>Dias restantes</th>
     </tr></thead><tbody id="body45"></tbody></table>
   </div>
@@ -438,7 +438,7 @@
       <div id="alert-pills-90" style="display:flex;gap:6px;flex-wrap:wrap"></div>
     </div>
     <table><thead><tr>
-      <th>Urgência</th><th>Colaborador</th><th>Loja</th><th>Setor</th><th>Função</th>
+      <th>Urgência</th><th>Tipo</th><th>Colaborador</th><th>Loja</th><th>Setor</th><th>Função</th>
       <th>Admissão</th><th>Vencimento 90d</th><th>Dias restantes</th>
     </tr></thead><tbody id="body90"></tbody></table>
   </div>
@@ -901,7 +901,7 @@ const rawData = [
 // ─────────────────────────────────────────────
 //  UTILITÁRIOS
 // ─────────────────────────────────────────────
-const TODAY = new Date('2026-03-13');
+const TODAY = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })();
 const storeColors = { CAM: '#f97316', SLM: '#3b82f6', CAX: '#a855f7', CAV: '#10b981' };
 
 function daysBetween(d1, d2) { return Math.round((d2 - d1) / 86400000); }
@@ -1267,14 +1267,18 @@ function populateAlertSelects() {
 // ─────────────────────────────────────────────
 const ALERT_WINDOW = 10; // dias antes do vencimento
 
-function alertRow(r, prazoDate, daysLeft) {
+function alertRow(r, prazoDate, daysLeft, tipo) {
   let dotClass='dot-green', urgText='Normal';
   if (daysLeft < 0)        { dotClass='dot-red';    urgText=`Vencido ${Math.abs(daysLeft)}d`; }
   else if (daysLeft <= 3)  { dotClass='dot-red';    urgText='Urgente'; }
   else if (daysLeft <= 7)  { dotClass='dot-yellow'; urgText='Atenção'; }
   const color = daysLeft<=3?'var(--red)':daysLeft<=7?'var(--yellow)':'var(--green)';
+  const tipoBadge = tipo === 45
+    ? `<span style="background:rgba(79,142,247,.15);color:#4f8ef7;border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:.04em">45d</span>`
+    : `<span style="background:rgba(168,85,247,.15);color:#a855f7;border-radius:8px;padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:.04em">90d</span>`;
   return `<tr>
     <td><span class="urgency-dot ${dotClass}"></span>${urgText}</td>
+    <td>${tipoBadge}</td>
     <td style="font-weight:500;font-size:12px">${r.nome}</td>
     <td><span class="badge badge-${r.loja.toLowerCase()}">${r.loja}</span></td>
     <td style="color:var(--muted)">${r.area||'—'}</td>
@@ -1310,11 +1314,11 @@ function buildAlerts() {
     const p90 = parseDate(getP90(r));
     if (p45) {
       const diff = daysBetween(TODAY, p45);
-      if (diff >= 0 && diff <= ALERT_WINDOW) alerts45.push({ r, p45, diff });
+      if (diff >= -10 && diff <= ALERT_WINDOW) alerts45.push({ r, p45, diff, tipo: 45 });
     }
     if (p90) {
       const diff = daysBetween(TODAY, p90);
-      if (diff >= 0 && diff <= ALERT_WINDOW) alerts90.push({ r, p90, diff });
+      if (diff >= -10 && diff <= ALERT_WINDOW) alerts90.push({ r, p90, diff, tipo: 90 });
     }
   });
 
@@ -1327,8 +1331,8 @@ function buildAlerts() {
   document.getElementById('alert-pills-45').innerHTML = pillsByLoja(alerts45.map(a=>a.r));
   const b45 = document.getElementById('body45');
   b45.innerHTML = alerts45.length
-    ? alerts45.map(({r,p45,diff}) => alertRow(r, p45, diff)).join('')
-    : `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted)">Nenhum vencimento de 45 dias nos próximos ${ALERT_WINDOW} dias.</td></tr>`;
+    ? alerts45.map(({r,p45,diff}) => alertRow(r, p45, diff, 45)).join('')
+    : `<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">Nenhum vencimento de 45 dias nos próximos ${ALERT_WINDOW} dias.</td></tr>`;
 
   // 90d block
   document.getElementById('alert-count-90').textContent =
@@ -1336,8 +1340,8 @@ function buildAlerts() {
   document.getElementById('alert-pills-90').innerHTML = pillsByLoja(alerts90.map(a=>a.r));
   const b90 = document.getElementById('body90');
   b90.innerHTML = alerts90.length
-    ? alerts90.map(({r,p90,diff}) => alertRow(r, p90, diff)).join('')
-    : `<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted)">Nenhum vencimento de 90 dias nos próximos ${ALERT_WINDOW} dias.</td></tr>`;
+    ? alerts90.map(({r,p90,diff}) => alertRow(r, p90, diff, 90)).join('')
+    : `<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">Nenhum vencimento de 90 dias nos próximos ${ALERT_WINDOW} dias.</td></tr>`;
 }
 
 
@@ -1606,19 +1610,20 @@ function buildRisco() {
     .sort((a, b) => b.score - a.score);
 
   // KPIs
-  const criticos  = scored.filter(r => r.nivel === 'critico').length;
-  const atencao   = scored.filter(r => r.nivel === 'atencao').length;
-  const monitorar = scored.filter(r => r.nivel === 'monitorar').length;
-  const vencidos  = d.filter(r => {
+  const criticos   = scored.filter(r => r.nivel === 'critico').length;
+  const atencao    = scored.filter(r => r.nivel === 'atencao').length;
+  const monitorar  = scored.filter(r => r.nivel === 'monitorar').length;
+  const efetivados = filteredData().filter(r => {
+    if (r.desligamento || r.transferido) return false;
     const p90 = r.p90 ? parseDate(r.p90) : null;
     return p90 && p90 < TODAY;
   }).length;
 
   document.getElementById('risco-kpis').innerHTML = [
-    { label:'🔴 Críticos',   val: criticos,  color:'red' },
-    { label:'🟡 Atenção',    val: atencao,   color:'yellow' },
-    { label:'🟢 Monitorar',  val: monitorar, color:'green' },
-    { label:'Prazo vencido', val: vencidos,  color:'purple' },
+    { label:'🔴 Críticos',  val: criticos,   color:'red' },
+    { label:'🟡 Atenção',   val: atencao,    color:'yellow' },
+    { label:'🟢 Monitorar', val: monitorar,  color:'green' },
+    { label:'✅ Efetivados', val: efetivados, color:'green' },
   ].map(k => `<div class="kpi-card ${k.color}">
     <div class="kpi-label">${k.label}</div>
     <div class="kpi-value">${k.val}</div>
@@ -1838,6 +1843,12 @@ function buildScorecard() {
 
 
 function render() {
+  // Update reference date badge dynamically
+  const badgeEl = document.getElementById('ref-badge');
+  if (badgeEl) {
+    badgeEl.textContent = TODAY.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })
+      .replace(/^\w/, c => c.toUpperCase());
+  }
   buildKPIs();
   buildStoreBreakdown();
   buildCharts();
