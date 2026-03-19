@@ -322,6 +322,32 @@
 
   /* hidden rows in filtered view */
   tr.hidden-row { display: none; }
+
+  /* ── TABS ── */
+  .tab-nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .tab-btn {
+    padding: 12px 18px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: .02em;
+    transition: all .15s;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--text2); }
+  .tab-btn.active { color: var(--text); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 </style>
 </head>
 <body>
@@ -340,6 +366,13 @@
   </div>
 </header>
 
+<div class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('rh',this)">📋 Painel RH</button>
+  <button class="tab-btn" onclick="switchTab('folha',this)">💰 Folha & HE</button>
+</div>
+
+<!-- ── TAB: PAINEL RH ── -->
+<div id="tab-rh" class="tab-panel active">
 <div class="filter-bar">
   <span class="filter-label">Loja</span>
   <button class="pill active" data-store="TODAS" onclick="setFilter('TODAS')">Todas</button>
@@ -348,7 +381,6 @@
   <button class="pill" data-store="CAX" onclick="setFilter('CAX')">CAX</button>
   <button class="pill" data-store="CAV" onclick="setFilter('CAV')">CAV</button>
 </div>
-
 <main>
 
   <!-- ── KPIs GLOBAIS ── -->
@@ -734,6 +766,124 @@
   </div>
 
 </main>
+</div><!-- /tab-rh -->
+
+<!-- ── TAB: FOLHA & HE ── -->
+<div id="tab-folha" class="tab-panel">
+
+<div style="
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:14px 32px;
+  display:flex;
+  align-items:stretch;
+  gap:0;
+">
+  <!-- Grupo Mês -->
+  <div style="display:flex;flex-direction:column;gap:6px;padding-right:24px;border-right:1px solid var(--border)">
+    <span style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600">Período</span>
+    <div style="display:flex;gap:4px">
+      <button class="pill active" data-mes="TODOS" onclick="setMesFilter('TODOS',this)" style="padding:4px 12px;font-size:12px">Todos</button>
+      <button class="pill" data-mes="Jul/25" onclick="setMesFilter('Jul/25',this)" style="padding:4px 12px;font-size:12px">Jul 2025</button>
+      <button class="pill" data-mes="Ago/25" onclick="setMesFilter('Ago/25',this)" style="padding:4px 12px;font-size:12px">Ago 2025</button>
+      <button class="pill" data-mes="Set/25" onclick="setMesFilter('Set/25',this)" style="padding:4px 12px;font-size:12px">Set 2025</button>
+      <button class="pill" data-mes="Out/25" onclick="setMesFilter('Out/25',this)" style="padding:4px 12px;font-size:12px">Out 2025</button>
+      <button class="pill" data-mes="Nov/25" onclick="setMesFilter('Nov/25',this)" style="padding:4px 12px;font-size:12px">Nov 2025</button>
+      <button class="pill" data-mes="Dez/25" onclick="setMesFilter('Dez/25',this)" style="padding:4px 12px;font-size:12px">Dez 2025</button>
+      <button class="pill" data-mes="Jan/26" onclick="setMesFilter('Jan/26',this)" style="padding:4px 12px;font-size:12px">Jan 2026</button>
+    </div>
+  </div>
+  <!-- Grupo Loja -->
+  <div style="display:flex;flex-direction:column;gap:6px;padding-left:24px">
+    <span style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:600">Loja</span>
+    <div style="display:flex;gap:4px">
+      <button class="pill active" data-he-loja="TODAS" onclick="setHeLoja('TODAS',this)" style="padding:4px 12px;font-size:12px">Todas</button>
+      <button class="pill" data-he-loja="CAM" onclick="setHeLoja('CAM',this)" style="padding:4px 12px;font-size:12px;border-color:var(--cam)44">CAM</button>
+      <button class="pill" data-he-loja="SLM" onclick="setHeLoja('SLM',this)" style="padding:4px 12px;font-size:12px;border-color:var(--slm)44">SLM</button>
+      <button class="pill" data-he-loja="CAX" onclick="setHeLoja('CAX',this)" style="padding:4px 12px;font-size:12px;border-color:var(--cax)44">CAX</button>
+      <button class="pill" data-he-loja="CAV" onclick="setHeLoja('CAV',this)" style="padding:4px 12px;font-size:12px;border-color:var(--cav)44">CAV</button>
+    </div>
+  </div>
+</div>
+
+<main style="padding-top:24px">
+
+  <!-- KPIs -->
+  <div class="section-title">Resumo do Período · Horas Extras &amp; Custo</div>
+  <div id="he-kpi-grid" class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:28px"></div>
+
+  <!-- Charts row -->
+  <div class="charts-grid" style="margin-bottom:24px">
+    <div class="chart-card">
+      <div class="chart-title">Custo HE por Loja</div>
+      <div class="chart-desc">50%/65% vs 100%/70% — R$ por período selecionado</div>
+      <div class="chart-wrap"><canvas id="chartHeLoja" height="220"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">HE como % dos Proventos</div>
+      <div class="chart-desc">Limite de alerta em 5% — acima indica necessidade de contratação</div>
+      <div class="chart-wrap"><canvas id="chartHePct" height="220"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-grid three" style="margin-bottom:28px">
+    <div class="chart-card">
+      <div class="chart-title">Total de Horas Extras</div>
+      <div class="chart-desc">Volume de horas por loja e tipo</div>
+      <div class="chart-wrap"><canvas id="chartHeHoras" height="200"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Evolução Mensal · Custo HE</div>
+      <div class="chart-desc">Jul × Ago por loja</div>
+      <div class="chart-wrap"><canvas id="chartHeEvolucao" height="200"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">HE 100% vs HE 50%</div>
+      <div class="chart-desc">Proporção de horas mais caras no total</div>
+      <div class="chart-wrap"><canvas id="chartHeProporcao" height="200"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Ranking individual -->
+  <div class="section-title">Ranking Individual · Maiores Acumuladores de HE</div>
+  <div class="table-card" style="margin-bottom:28px">
+    <div class="table-header-bar">
+      <div>
+        <div class="table-title">Top Colaboradores — Horas Extras</div>
+        <div class="table-desc-text">Ordenado por total de horas. Alertas automáticos por faixa.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:10px;color:var(--muted)">Limiar crítico:</span>
+        <select id="he-limiar" onchange="buildHeRanking()" style="background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:4px 8px;font-size:12px;font-family:inherit">
+          <option value="40">40h (padrão)</option>
+          <option value="30">30h</option>
+          <option value="20">20h</option>
+        </select>
+      </div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Alerta</th>
+        <th>Colaborador</th>
+        <th>Loja</th>
+        <th>Mês</th>
+        <th style="text-align:right">HE 50%/65%</th>
+        <th style="text-align:right">HE 100%/70%</th>
+        <th style="text-align:right">Total horas</th>
+        <th style="text-align:right">Custo estimado*</th>
+        <th>Situação</th>
+      </tr></thead>
+      <tbody id="bodyHeRanking"></tbody>
+    </table>
+    <div style="padding:10px 16px;font-size:11px;color:var(--muted)">* Custo estimado proporcional ao custo total de HE da loja no mês (indicativo)</div>
+  </div>
+
+  <!-- Alertas estruturais -->
+  <div class="section-title">Alertas Estruturais · Análise de Padrões</div>
+  <div id="he-alertas" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px"></div>
+
+</main>
+</div>
 
 <script>
 // ─────────────────────────────────────────────
@@ -1839,6 +1989,495 @@ function buildScorecard() {
     },
     options:{ plugins:{legend:{...baseLegend}}, scales:{...baseScales, x:{...baseScales.x,stacked:true}, y:{...baseScales.y,stacked:true}} }
   });
+}
+
+
+// ─────────────────────────────────────────────
+//  FOLHA & HE — DADOS
+// ─────────────────────────────────────────────
+const heLojaData = [
+  { mes:'Jul/25', loja:'CAM', prov:101594.05, he50v:3385.96,  he100v:1910.04,  he50h:288.12, he100h:110.47 },
+  { mes:'Jul/25', loja:'CAV', prov:40788.30,  he50v:591.11,   he100v:56.07,    he50h:49.40,  he100h:4.78   },
+  { mes:'Jul/25', loja:'CAX', prov:73180.04,  he50v:4606.69,  he100v:3245.33,  he50h:390.77, he100h:201.62 },
+  { mes:'Jul/25', loja:'SLM', prov:45567.20,  he50v:523.93,   he100v:283.43,   he50h:48.82,  he100h:19.98  },
+  { mes:'Ago/25', loja:'CAM', prov:86158.30,  he50v:3119.71,  he100v:521.98,   he50h:257.43, he100h:32.18  },
+  { mes:'Ago/25', loja:'CAV', prov:31124.54,  he50v:641.31,   he100v:60.13,    he50h:54.93,  he100h:4.97   },
+  { mes:'Ago/25', loja:'CAX', prov:67048.78,  he50v:660.53,   he100v:0,        he50h:57.33,  he100h:0      },
+  { mes:'Ago/25', loja:'SLM', prov:46267.96,  he50v:105.52,   he100v:39.18,    he50h:9.48,   he100h:2.55   },
+  // Setembro 2025
+  { mes:'Set/25', loja:'CAM', prov:95711.67,  he50v:1365.99,  he100v:110.34,   he50h:114.02, he100h:6.68   },
+  { mes:'Set/25', loja:'CAV', prov:39582.40,  he50v:485.98,   he100v:29.68,    he50h:42.17,  he100h:2.43   },
+  { mes:'Set/25', loja:'CAX', prov:62936.48,  he50v:486.60,   he100v:22.15,    he50h:41.68,  he100h:1.55   },
+  { mes:'Set/25', loja:'SLM', prov:54863.58,  he50v:146.41,   he100v:18.87,    he50h:13.50,  he100h:1.23   },
+  // Outubro 2025
+  { mes:'Out/25', loja:'CAM', prov:85062.67,  he50v:2546.62,  he100v:623.58,   he50h:211.27, he100h:36.02  },
+  { mes:'Out/25', loja:'CAV', prov:32951.49,  he50v:823.61,   he100v:58.75,    he50h:69.35,  he100h:4.87   },
+  { mes:'Out/25', loja:'CAX', prov:60775.81,  he50v:842.89,   he100v:59.11,    he50h:69.30,  he100h:4.17   },
+  { mes:'Out/25', loja:'SLM', prov:48801.58,  he50v:244.06,   he100v:35.44,    he50h:21.73,  he100h:2.30   },
+  // Novembro 2025
+  { mes:'Nov/25', loja:'CAM', prov:112279.51, he50v:3685.75,  he100v:1515.20,  he50h:301.47, he100h:90.37  },
+  { mes:'Nov/25', loja:'CAV', prov:28743.62,  he50v:782.05,   he100v:185.19,   he50h:66.28,  he100h:15.63  },
+  { mes:'Nov/25', loja:'CAX', prov:73521.29,  he50v:1034.80,  he100v:234.71,   he50h:81.40,  he100h:15.48  },
+  { mes:'Nov/25', loja:'SLM', prov:50551.02,  he50v:273.92,   he100v:141.49,   he50h:24.93,  he100h:9.82   },
+  // Dezembro 2025
+  { mes:'Dez/25', loja:'CAM', prov:119203.36, he50v:4310.38,  he100v:1949.31,  he50h:350.63, he100h:112.0  },
+  { mes:'Dez/25', loja:'CAV', prov:44102.89,  he50v:803.98,   he100v:62.03,    he50h:64.53,  he100h:4.80   },
+  { mes:'Dez/25', loja:'CAX', prov:64643.23,  he50v:1090.77,  he100v:132.99,   he50h:88.62,  he100h:8.53   },
+  { mes:'Dez/25', loja:'SLM', prov:56393.75,  he50v:543.67,   he100v:49.43,    he50h:48.90,  he100h:3.25   },
+  // Janeiro 2026
+  { mes:'Jan/26', loja:'CAM', prov:91811.89,  he50v:4281.05,  he100v:1603.79,  he50h:337.03, he100h:92.63  },
+  { mes:'Jan/26', loja:'CAV', prov:36416.36,  he50v:578.40,   he100v:69.38,    he50h:46.18,  he100h:5.12   },
+  { mes:'Jan/26', loja:'CAX', prov:74148.53,  he50v:801.29,   he100v:90.59,    he50h:63.82,  he100h:5.45   },
+  { mes:'Jan/26', loja:'SLM', prov:51862.77,  he50v:264.15,   he100v:26.70,    he50h:22.75,  he100h:1.63   },
+];
+
+const heIndividual = [
+  { nome:'Eduardo Claudino de Lima',       loja:'CAX', mes:'Jul/25', h50:28.0, h100:24.5 },
+  { nome:'José Carlos dos Santos',          loja:'CAM', mes:'Jul/25', h50:22.9, h100:25.5 },
+  { nome:'Melquesedek M. do Nascimento',    loja:'CAM', mes:'Jul/25', h50:24.8, h100:20.7 },
+  { nome:'Julia Carolina da Silva',         loja:'CAX', mes:'Jul/25', h50:20.0, h100:20.2 },
+  { nome:'Carlos Alberto Araujo da Costa',  loja:'CAX', mes:'Jul/25', h50:28.3, h100:10.2 },
+  { nome:'Rosângela Maria da Silva',        loja:'CAX', mes:'Jul/25', h50:24.9, h100:12.3 },
+  { nome:'Joelson dos Santos Souza',        loja:'SLM', mes:'Jul/25', h50:22.4, h100:14.6 },
+  { nome:'Otávio Claudino Nazaro',          loja:'CAM', mes:'Jul/25', h50:21.0, h100:9.3  },
+  { nome:'Patricia da Conceição Guedes',    loja:'CAM', mes:'Jul/25', h50:23.1, h100:8.5  },
+  { nome:'Rogerio Manoel dos Anjos',        loja:'CAM', mes:'Jul/25', h50:24.0, h100:6.9  },
+  { nome:'Felipe da Silva Mendes',          loja:'CAM', mes:'Jul/25', h50:17.4, h100:8.0  },
+  { nome:'Marcos Felipe da Silva Santana',  loja:'CAM', mes:'Jul/25', h50:23.9, h100:1.5  },
+  { nome:'Kaio Enrique de Lima Silva',      loja:'CAX', mes:'Jul/25', h50:24.8, h100:8.5  },
+  { nome:'William Rodrigues Nunes',         loja:'CAX', mes:'Jul/25', h50:16.8, h100:10.3 },
+  { nome:'Tiago Henrique Freitas',          loja:'CAM', mes:'Jul/25', h50:14.8, h100:2.3  },
+  { nome:'Luano Barbosa da Silva',          loja:'CAM', mes:'Jul/25', h50:12.6, h100:1.0  },
+  { nome:'Kelly Bezerra da Silva',          loja:'SLM', mes:'Jul/25', h50:9.9,  h100:5.4  },
+  { nome:'Kethully Pereira de Lima',        loja:'SLM', mes:'Jul/25', h50:14.1, h100:0    },
+  { nome:'Mateus Pereira Dionísio',         loja:'CAX', mes:'Jul/25', h50:11.8, h100:9.2  },
+  { nome:'Mayara Graziella de Lima',        loja:'CAX', mes:'Jul/25', h50:10.9, h100:9.9  },
+  // Agosto
+  { nome:'José Pedro Xavier Monteiro',      loja:'CAV', mes:'Ago/25', h50:29.9, h100:2.4  },
+  { nome:'José Carlos dos Santos',          loja:'CAM', mes:'Ago/25', h50:27.1, h100:6.1  },
+  { nome:'Otávio Claudino Nazaro',          loja:'CAM', mes:'Ago/25', h50:26.5, h100:3.8  },
+  { nome:'Luano Barbosa da Silva',          loja:'CAM', mes:'Ago/25', h50:23.6, h100:4.5  },
+  { nome:'Rogerio Manoel dos Anjos',        loja:'CAM', mes:'Ago/25', h50:22.1, h100:3.5  },
+  { nome:'Marcos Felipe da Silva Santana',  loja:'CAM', mes:'Ago/25', h50:15.9, h100:2.9  },
+  { nome:'Tiago Henrique Freitas',          loja:'CAM', mes:'Ago/25', h50:13.5, h100:1.5  },
+  { nome:'Felipe da Silva Mendes',          loja:'CAM', mes:'Ago/25', h50:12.6, h100:1.9  },
+  { nome:'Adeylson Kevyson M. da Silva',    loja:'CAM', mes:'Ago/25', h50:1.9,  h100:5.9  },
+  { nome:'Alex Cavalcante do Nascimento',   loja:'CAM', mes:'Ago/25', h50:19.0, h100:6.1  },
+  { nome:'Eduardo Claudino de Lima',        loja:'CAX', mes:'Ago/25', h50:5.0,  h100:0    },
+  { nome:'Ana Cláudia Benevides',           loja:'CAX', mes:'Ago/25', h50:5.0,  h100:0    },
+  { nome:'Giselle Bezerra Gomes',           loja:'CAV', mes:'Ago/25', h50:3.7,  h100:1.7  },
+  { nome:'Edicleide Henrique da Silva',     loja:'SLM', mes:'Ago/25', h50:4.2,  h100:0    },
+  // Outubro 2025 — CAM
+  { nome:'José Carlos dos Santos',          loja:'CAM', mes:'Out/25', h50:32.0, h100:6.6  },
+  { nome:'Otávio Claudino Nazaro',          loja:'CAM', mes:'Out/25', h50:27.1, h100:1.5  },
+  { nome:'Rogerio Manoel dos Anjos',        loja:'CAM', mes:'Out/25', h50:21.3, h100:2.4  },
+  { nome:'Melquesedek M. do Nascimento',    loja:'CAM', mes:'Out/25', h50:15.7, h100:12.8 },
+  { nome:'Tiago Henrique Freitas',          loja:'CAM', mes:'Out/25', h50:8.4,  h100:9.4  },
+  { nome:'Felipe da Silva Mendes',          loja:'CAM', mes:'Out/25', h50:10.0, h100:0.7  },
+  { nome:'Luano Barbosa da Silva',          loja:'CAM', mes:'Out/25', h50:11.9, h100:3.3  },
+  { nome:'Marcos Felipe da Silva Santana',  loja:'CAM', mes:'Out/25', h50:11.6, h100:1.0  },
+  { nome:'Adeylson Kevyson M. da Silva',    loja:'CAM', mes:'Out/25', h50:1.2,  h100:9.6  },
+  { nome:'Maria Verônica dos Santos',       loja:'CAM', mes:'Out/25', h50:4.9,  h100:6.9  },
+  { nome:'Patricia da Conceição Guedes',    loja:'CAM', mes:'Out/25', h50:9.9,  h100:0    },
+  { nome:'Moisés Eugênio Lopes',            loja:'CAM', mes:'Out/25', h50:8.4,  h100:0.4  },
+  { nome:'Evandro de Santana Gomes',        loja:'CAM', mes:'Out/25', h50:5.7,  h100:1.2  },
+  // Outubro 2025 — CAV
+  { nome:'José Pedro Xavier Monteiro',      loja:'CAV', mes:'Out/25', h50:31.7, h100:2.5  },
+  { nome:'Ademar Ferreira de Morais Neto',  loja:'CAV', mes:'Out/25', h50:18.4, h100:1.0  },
+  { nome:'Daciana da Silva',                loja:'CAV', mes:'Out/25', h50:2.4,  h100:5.3  },
+  { nome:'Ricardo José Basílio',            loja:'CAV', mes:'Out/25', h50:5.1,  h100:0.6  },
+  // Outubro 2025 — CAX
+  { nome:'Carlos Henrique dos Santos',      loja:'CAX', mes:'Out/25', h50:18.4, h100:1.9  },
+  { nome:'Kamilla Mayara Braga',            loja:'CAX', mes:'Out/25', h50:0.5,  h100:13.5 },
+  { nome:'Eduardo Claudino de Lima',        loja:'CAX', mes:'Out/25', h50:4.6,  h100:4.9  },
+  { nome:'Girlene Cássia Aguiar',           loja:'CAX', mes:'Out/25', h50:6.2,  h100:0    },
+  { nome:'Ana Cláudia Benevides',           loja:'CAX', mes:'Out/25', h50:5.6,  h100:0.6  },
+  { nome:'Mateus Pereira Dionísio',         loja:'CAX', mes:'Out/25', h50:2.9,  h100:3.2  },
+  { nome:'Raphaela Batista da Silva',       loja:'CAX', mes:'Out/25', h50:4.4,  h100:0.9  },
+  // Outubro 2025 — SLM
+  { nome:'Joelson dos Santos Souza',        loja:'SLM', mes:'Out/25', h50:7.4,  h100:0    },
+  { nome:'Vitor Anailson F. Pereira',       loja:'SLM', mes:'Out/25', h50:4.1,  h100:3.4  },
+  { nome:'Severino Antero da Silva',        loja:'SLM', mes:'Out/25', h50:1.2,  h100:4.7  },
+  // Novembro 2025 — CAM
+  { nome:'Alex Cavalcante do Nascimento',   loja:'CAM', mes:'Nov/25', h50:35.0, h100:21.6 },
+  { nome:'José Carlos dos Santos',          loja:'CAM', mes:'Nov/25', h50:27.9, h100:2.4  },
+  { nome:'Guilherme da Silva Santos',       loja:'CAM', mes:'Nov/25', h50:20.9, h100:9.7  },
+  { nome:'Emanuel das Neves Silva',         loja:'CAM', mes:'Nov/25', h50:22.9, h100:5.1  },
+  { nome:'Otávio Claudino Nazaro',          loja:'CAM', mes:'Nov/25', h50:20.4, h100:1.4  },
+  { nome:'Rogerio Manoel dos Anjos',        loja:'CAM', mes:'Nov/25', h50:19.0, h100:7.6  },
+  { nome:'Aleson Felipe Fernandes',         loja:'CAM', mes:'Nov/25', h50:11.7, h100:6.6  },
+  { nome:'Tiago Henrique Freitas',          loja:'CAM', mes:'Nov/25', h50:13.9, h100:3.5  },
+  { nome:'Evandro de Santana Gomes',        loja:'CAM', mes:'Nov/25', h50:13.1, h100:1.1  },
+  { nome:'Melquesedek M. do Nascimento',    loja:'CAM', mes:'Nov/25', h50:11.0, h100:4.0  },
+  { nome:'Luano Barbosa da Silva',          loja:'CAM', mes:'Nov/25', h50:10.9, h100:0.5  },
+  { nome:'José Helton Fagner de Lira',      loja:'CAM', mes:'Nov/25', h50:10.4, h100:0.5  },
+  { nome:'Patricia da Conceição Guedes',    loja:'CAM', mes:'Nov/25', h50:8.0,  h100:0.8  },
+  { nome:'Dayvson Moreira de Lira',         loja:'CAM', mes:'Nov/25', h50:8.1,  h100:0.2  },
+  // Novembro 2025 — CAV
+  { nome:'José Pedro Xavier Monteiro',      loja:'CAV', mes:'Nov/25', h50:26.9, h100:8.4  },
+  { nome:'Ademar Ferreira de Morais Neto',  loja:'CAV', mes:'Nov/25', h50:13.8, h100:0.9  },
+  { nome:'Iuri Ubiratan da Silva',          loja:'CAV', mes:'Nov/25', h50:7.0,  h100:2.7  },
+  { nome:'Ricardo José Basílio',            loja:'CAV', mes:'Nov/25', h50:6.2,  h100:0.5  },
+  // Novembro 2025 — CAX
+  { nome:'Carlos Henrique dos Santos',      loja:'CAX', mes:'Nov/25', h50:18.4, h100:8.9  },
+  { nome:'Robson Emanuel da Silva Bezerra', loja:'CAX', mes:'Nov/25', h50:9.5,  h100:0.7  },
+  { nome:'Luciana Albrecht Ribeiro',        loja:'CAX', mes:'Nov/25', h50:5.8,  h100:0.4  },
+  { nome:'Ednalva Henrique Cavalcanti',     loja:'CAX', mes:'Nov/25', h50:4.7,  h100:1.1  },
+  { nome:'Michel da Silva Ferreira',        loja:'CAX', mes:'Nov/25', h50:4.9,  h100:0.4  },
+  { nome:'Tarcila Beatriz Pereira',         loja:'CAX', mes:'Nov/25', h50:4.2,  h100:0.8  },
+  { nome:'Natália Almeida Freitas',         loja:'CAX', mes:'Nov/25', h50:0.6,  h100:4.0  },
+  { nome:'Mateus Pereira Dionísio',         loja:'CAX', mes:'Nov/25', h50:0.4,  h100:3.2  },
+  // Novembro 2025 — SLM
+  { nome:'Tiago Manoel de Sá Silva',        loja:'SLM', mes:'Nov/25', h50:1.0,  h100:5.7  },
+  { nome:'Wagner Francisco de França',      loja:'SLM', mes:'Nov/25', h50:4.6,  h100:0    },
+  { nome:'Joelson dos Santos Souza',        loja:'SLM', mes:'Nov/25', h50:4.4,  h100:0    },
+  // Dezembro 2025 — CAM
+  { nome:'José Helton Fagner de Lira',      loja:'CAM', mes:'Dez/25', h50:29.03, h100:12.62 },
+  { nome:'Aleson Felipe Fernandes',         loja:'CAM', mes:'Dez/25', h50:30.35, h100:21.08 },
+  { nome:'Otávio Claudino Nazaro',          loja:'CAM', mes:'Dez/25', h50:23.57, h100:10.73 },
+  { nome:'Guilherme da Silva Santos',       loja:'CAM', mes:'Dez/25', h50:22.55, h100:3.15  },
+  { nome:'Emanuel das Neves Silva',         loja:'CAM', mes:'Dez/25', h50:22.32, h100:2.62  },
+  { nome:'Tiago Henrique Freitas',          loja:'CAM', mes:'Dez/25', h50:19.28, h100:10.60 },
+  { nome:'Rogerio Manoel dos Anjos',        loja:'CAM', mes:'Dez/25', h50:19.47, h100:7.28  },
+  { nome:'Eduardo Batista da Silva',        loja:'CAM', mes:'Dez/25', h50:19.53, h100:6.90  },
+  { nome:'Luano Barbosa da Silva',          loja:'CAM', mes:'Dez/25', h50:21.47, h100:3.72  },
+  { nome:'Alex Cavalcante do Nascimento',   loja:'CAM', mes:'Dez/25', h50:22.22, h100:4.05  },
+  { nome:'Patricia da Conceição Guedes',    loja:'CAM', mes:'Dez/25', h50:13.63, h100:1.60  },
+  { nome:'Melquesedek M. do Nascimento',    loja:'CAM', mes:'Dez/25', h50:14.08, h100:6.70  },
+  { nome:'Cleverson Alcantara dos Santos',  loja:'CAM', mes:'Dez/25', h50:17.13, h100:5.00  },
+  { nome:'Evandro de Santana Gomes',        loja:'CAM', mes:'Dez/25', h50:12.42, h100:2.60  },
+  { nome:'Robson Gomes de Sousa',           loja:'CAM', mes:'Dez/25', h50:7.70,  h100:0     },
+  { nome:'Moisés Eugênio Lopes',            loja:'CAM', mes:'Dez/25', h50:6.12,  h100:0.80  },
+  // Dezembro 2025 — CAV
+  { nome:'José Pedro Xavier Monteiro',      loja:'CAV', mes:'Dez/25', h50:32.87, h100:2.83  },
+  { nome:'Ademar Ferreira de Morais Neto',  loja:'CAV', mes:'Dez/25', h50:13.95, h100:0     },
+  { nome:'Ricardo José Basílio',            loja:'CAV', mes:'Dez/25', h50:4.08,  h100:0     },
+  { nome:'Valdete Ferreira da Rocha',       loja:'CAV', mes:'Dez/25', h50:2.18,  h100:0     },
+  { nome:'Ana Clécia de Oliveira Vieira',   loja:'CAV', mes:'Dez/25', h50:1.77,  h100:0     },
+  // Dezembro 2025 — CAX
+  { nome:'Carlos Henrique dos Santos',      loja:'CAX', mes:'Dez/25', h50:18.62, h100:2.12  },
+  { nome:'Kamilla Mayara Braga',            loja:'CAX', mes:'Dez/25', h50:7.97,  h100:0     },
+  { nome:'Robson Emanuel da Silva Bezerra', loja:'CAX', mes:'Dez/25', h50:13.90, h100:0.13  },
+  { nome:'Solange Maria da Silva',          loja:'CAX', mes:'Dez/25', h50:4.63,  h100:0     },
+  { nome:'Michel da Silva Ferreira',        loja:'CAX', mes:'Dez/25', h50:4.07,  h100:0.82  },
+  { nome:'Maria Pereira da Silva',          loja:'CAX', mes:'Dez/25', h50:3.83,  h100:3.78  },
+  { nome:'Raphaela Batista da Silva',       loja:'CAX', mes:'Dez/25', h50:3.73,  h100:0.32  },
+  { nome:'Eduardo de Almeida Lopes',        loja:'CAX', mes:'Dez/25', h50:3.33,  h100:0.07  },
+  { nome:'Mateus Pereira Dionísio',         loja:'CAX', mes:'Dez/25', h50:3.38,  h100:2.47  },
+  { nome:'Carlos Alberto Araujo da Costa',  loja:'CAX', mes:'Dez/25', h50:2.22,  h100:0.23  },
+  // Dezembro 2025 — SLM
+  { nome:'Thalles Yago Barbosa',            loja:'SLM', mes:'Dez/25', h50:10.80, h100:0.97  },
+  { nome:'Ananias Santana do Nascimento',   loja:'SLM', mes:'Dez/25', h50:6.82,  h100:0     },
+  { nome:'Joelson dos Santos Souza',        loja:'SLM', mes:'Dez/25', h50:7.00,  h100:0.52  },
+  { nome:'Rosiane de Oliveira Silva',       loja:'SLM', mes:'Dez/25', h50:2.80,  h100:0     },
+  { nome:'Tiago Manoel de Sá Silva',        loja:'SLM', mes:'Dez/25', h50:2.35,  h100:3.93  },
+  { nome:'Lucas Felipe do Nascimento',      loja:'SLM', mes:'Dez/25', h50:2.88,  h100:3.18  },
+  { nome:'Vitor Anailson F. Pereira',       loja:'SLM', mes:'Dez/25', h50:2.07,  h100:1.22  },
+  // Janeiro 2026 — CAM
+  { nome:'Otávio Claudino Nazaro',          loja:'CAM', mes:'Jan/26', h50:35.47, h100:18.00 },
+  { nome:'Aleson Felipe Fernandes',         loja:'CAM', mes:'Jan/26', h50:37.43, h100:19.57 },
+  { nome:'Alex Cavalcante do Nascimento',   loja:'CAM', mes:'Jan/26', h50:28.63, h100:12.32 },
+  { nome:'José Helton Fagner de Lira',      loja:'CAM', mes:'Jan/26', h50:29.43, h100:9.67  },
+  { nome:'Guilherme da Silva Santos',       loja:'CAM', mes:'Jan/26', h50:22.92, h100:1.40  },
+  { nome:'Rogerio Manoel dos Anjos',        loja:'CAM', mes:'Jan/26', h50:22.27, h100:1.18  },
+  { nome:'Emanuel das Neves Silva',         loja:'CAM', mes:'Jan/26', h50:21.93, h100:1.08  },
+  { nome:'Luano Barbosa da Silva',          loja:'CAM', mes:'Jan/26', h50:19.22, h100:10.82 },
+  { nome:'Eduardo Batista da Silva',        loja:'CAM', mes:'Jan/26', h50:18.70, h100:4.23  },
+  { nome:'Tiago Henrique Freitas',          loja:'CAM', mes:'Jan/26', h50:18.67, h100:5.15  },
+  { nome:'Evandro de Santana Gomes',        loja:'CAM', mes:'Jan/26', h50:14.02, h100:0.47  },
+  { nome:'Melquesedek M. do Nascimento',    loja:'CAM', mes:'Jan/26', h50:13.85, h100:4.28  },
+  { nome:'Patricia da Conceição Guedes',    loja:'CAM', mes:'Jan/26', h50:11.77, h100:4.47  },
+  { nome:'Moisés Eugênio Lopes',            loja:'CAM', mes:'Jan/26', h50:6.22,  h100:0     },
+  { nome:'Thalles Yago Barbosa',            loja:'CAM', mes:'Jan/26', h50:5.52,  h100:1.82  },
+  // Janeiro 2026 — CAV
+  { nome:'José Pedro Xavier Monteiro',      loja:'CAV', mes:'Jan/26', h50:25.97, h100:1.18  },
+  { nome:'Wellton Rodrigues da Silva',      loja:'CAV', mes:'Jan/26', h50:5.27,  h100:0.88  },
+  { nome:'Ricardo José Basílio',            loja:'CAV', mes:'Jan/26', h50:3.62,  h100:1.18  },
+  { nome:'Ademar Ferreira de Morais Neto',  loja:'CAV', mes:'Jan/26', h50:3.45,  h100:2.57  },
+  { nome:'Iuri Ubiratan da Silva',          loja:'CAV', mes:'Jan/26', h50:1.40,  h100:0.48  },
+  // Janeiro 2026 — CAX
+  { nome:'Eduardo Claudino de Lima',        loja:'CAX', mes:'Jan/26', h50:7.98,  h100:1.85  },
+  { nome:'Carlos Alberto Araujo da Costa',  loja:'CAX', mes:'Jan/26', h50:7.02,  h100:0.32  },
+  { nome:'Kamilla Mayara Braga',            loja:'CAX', mes:'Jan/26', h50:6.35,  h100:0     },
+  { nome:'Robson Emanuel da Silva Bezerra', loja:'CAX', mes:'Jan/26', h50:5.70,  h100:0.32  },
+  { nome:'Maria Luiza de Santana',          loja:'CAX', mes:'Jan/26', h50:5.18,  h100:0     },
+  { nome:'Girlene Cássia Aguiar',           loja:'CAX', mes:'Jan/26', h50:4.72,  h100:0     },
+  { nome:'Julia Carolina da Silva',         loja:'CAX', mes:'Jan/26', h50:3.00,  h100:0     },
+  { nome:'Larissa Ferreira da Silva',       loja:'CAX', mes:'Jan/26', h50:3.07,  h100:0     },
+  { nome:'Ana Cláudia Benevides',           loja:'CAX', mes:'Jan/26', h50:2.70,  h100:0.52  },
+  { nome:'Maria Pereira da Silva',          loja:'CAX', mes:'Jan/26', h50:2.32,  h100:3.60  },
+  // Janeiro 2026 — SLM
+  { nome:'Tiago Manoel de Sá Silva',        loja:'SLM', mes:'Jan/26', h50:0.63,  h100:8.92  },
+  { nome:'Flávio Fraga Pereira',            loja:'SLM', mes:'Jan/26', h50:2.80,  h100:7.32  },
+  { nome:'Anderson Constantino de Arruda',  loja:'SLM', mes:'Jan/26', h50:3.70,  h100:0     },
+  { nome:'Joelson dos Santos Souza',        loja:'SLM', mes:'Jan/26', h50:2.23,  h100:0     },
+  { nome:'Severino Antero da Silva',        loja:'SLM', mes:'Jan/26', h50:1.88,  h100:0.57  },
+  { nome:'Erick Alves Costa',               loja:'SLM', mes:'Jan/26', h50:1.20,  h100:1.15  },
+];
+
+// ─────────────────────────────────────────────
+//  FOLHA & HE — ESTADO
+// ─────────────────────────────────────────────
+let activeMes = 'TODOS';
+let activeHeLoja = 'TODAS';
+let chartHeLoja, chartHePct, chartHeHoras, chartHeEvolucao, chartHeProporcao;
+
+function getHeData() {
+  return heLojaData.filter(d =>
+    (activeMes === 'TODOS' || d.mes === activeMes) &&
+    (activeHeLoja === 'TODAS' || d.loja === activeHeLoja)
+  );
+}
+function getHeInd() {
+  return heIndividual.filter(d =>
+    (activeMes === 'TODOS' || d.mes === activeMes) &&
+    (activeHeLoja === 'TODAS' || d.loja === activeHeLoja)
+  );
+}
+
+function setMesFilter(mes, btn) {
+  activeMes = mes;
+  document.querySelectorAll('[data-mes]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFolha();
+}
+function setHeLoja(loja, btn) {
+  activeHeLoja = loja;
+  document.querySelectorAll('[data-he-loja]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFolha();
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+  if (tab === 'folha') renderFolha();
+}
+
+// ─────────────────────────────────────────────
+//  FOLHA & HE — BUILD FUNCTIONS
+// ─────────────────────────────────────────────
+function renderFolha() {
+  buildHeKPIs();
+  buildHeCharts();
+  buildHeRanking();
+  buildHeAlertas();
+}
+
+function buildHeKPIs() {
+  const d = getHeData();
+  const totHe50v  = d.reduce((a,r)=>a+r.he50v,0);
+  const totHe100v = d.reduce((a,r)=>a+r.he100v,0);
+  const totHe     = totHe50v + totHe100v;
+  const totProv   = d.reduce((a,r)=>a+r.prov,0);
+  const pct       = totProv ? (totHe/totProv*100) : 0;
+  const totH50    = d.reduce((a,r)=>a+r.he50h,0);
+  const totH100   = d.reduce((a,r)=>a+r.he100h,0);
+  const totH      = totH50 + totH100;
+  const pct100    = totH ? (totH100/totH*100) : 0;
+
+  const kpis = [
+    { label:'Custo Total HE', value:'R$'+totHe.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0}), sub: totHe100v>0?'100%: R$'+totHe100v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0}):'sem HE 100%', color: pct>5?'red':'green' },
+    { label:'HE % dos Proventos', value:pct.toFixed(1)+'%', sub: pct>5?'⚠ acima do alerta':'dentro do limite', color: pct>5?'red':'green' },
+    { label:'Total de Horas', value:totH.toFixed(0)+'h', sub: '50%: '+totH50.toFixed(0)+'h | 100%: '+totH100.toFixed(0)+'h', color:'blue' },
+    { label:'HE 100% do total', value:pct100.toFixed(0)+'%', sub: pct100>20?'⚠ escala irregular':'escala adequada', color: pct100>20?'yellow':'green' },
+    { label:'Meses analisados', value: activeMes==='TODOS'?'2':'1', sub: activeMes==='TODOS'?'Jul, Ago e Set 2025':activeMes, color:'purple' },
+  ];
+
+  const colors = { red:'red', green:'green', blue:'blue', yellow:'yellow', purple:'purple' };
+  document.getElementById('he-kpi-grid').innerHTML = kpis.map(k=>`
+    <div class="kpi-card ${colors[k.color]}">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value" style="font-size:22px">${k.value}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`).join('');
+}
+
+function buildHeCharts() {
+  [chartHeLoja,chartHePct,chartHeHoras,chartHeEvolucao,chartHeProporcao].forEach(c=>{ if(c){c.destroy();} });
+
+  const lojas = ['CAM','SLM','CAX','CAV'];
+  const d = getHeData();
+
+  // aggregate by loja
+  const byLoja = lojas.map(l => {
+    const rows = d.filter(r=>r.loja===l);
+    return {
+      he50v:  rows.reduce((a,r)=>a+r.he50v,0),
+      he100v: rows.reduce((a,r)=>a+r.he100v,0),
+      he50h:  rows.reduce((a,r)=>a+r.he50h,0),
+      he100h: rows.reduce((a,r)=>a+r.he100h,0),
+      prov:   rows.reduce((a,r)=>a+r.prov,0),
+    };
+  });
+
+  chartHeLoja = new Chart(document.getElementById('chartHeLoja'), {
+    type:'bar',
+    data:{ labels:lojas, datasets:[
+      { label:'HE 50%/65%', data:byLoja.map(r=>+r.he50v.toFixed(0)),  backgroundColor:'#f59e0b99', borderColor:'#f59e0b', borderWidth:2, borderRadius:4 },
+      { label:'HE 100%/70%',data:byLoja.map(r=>+r.he100v.toFixed(0)), backgroundColor:'#ef444499', borderColor:'#ef4444', borderWidth:2, borderRadius:4 },
+    ]},
+    options:{ plugins:{legend:{...baseLegend}}, scales:{...baseScales, x:{...baseScales.x,stacked:true}, y:{...baseScales.y,stacked:true, ticks:{...baseScales.y.ticks,callback:v=>'R$'+v.toLocaleString('pt-BR')}}} }
+  });
+
+  const pcts = byLoja.map(r=>r.prov?+((r.he50v+r.he100v)/r.prov*100).toFixed(1):0);
+  chartHePct = new Chart(document.getElementById('chartHePct'), {
+    type:'bar',
+    data:{ labels:lojas, datasets:[
+      { label:'HE % proventos', data:pcts, backgroundColor:pcts.map(p=>p>5?'#ef444499':'#22c55e66'), borderColor:pcts.map(p=>p>5?'#ef4444':'#22c55e'), borderWidth:2, borderRadius:6 },
+    ]},
+    options:{ plugins:{legend:{display:false},annotation:{annotations:{line1:{type:'line',yMin:5,yMax:5,borderColor:'#ef4444',borderWidth:1.5,borderDash:[4,3]}}}},
+      scales:{...baseScales, y:{...baseScales.y, ticks:{...baseScales.y.ticks, callback:v=>v+'%'}}} }
+  });
+
+  chartHeHoras = new Chart(document.getElementById('chartHeHoras'), {
+    type:'bar',
+    data:{ labels:lojas, datasets:[
+      { label:'50%/65%',  data:byLoja.map(r=>+r.he50h.toFixed(0)),  backgroundColor:'#3b82f699', borderColor:'#3b82f6', borderWidth:2, borderRadius:4 },
+      { label:'100%/70%', data:byLoja.map(r=>+r.he100h.toFixed(0)), backgroundColor:'#ef444499', borderColor:'#ef4444', borderWidth:2, borderRadius:4 },
+    ]},
+    options:{ plugins:{legend:{...baseLegend}}, scales:{...baseScales, x:{...baseScales.x,stacked:true}, y:{...baseScales.y,stacked:true, ticks:{...baseScales.y.ticks,callback:v=>v+'h'}}} }
+  });
+
+  // Evolução: Jul vs Ago by loja (line)
+  const meses = ['Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26'];
+  chartHeEvolucao = new Chart(document.getElementById('chartHeEvolucao'), {
+    type:'line',
+    data:{ labels:meses, datasets: lojas.map(l=>({
+      label:l,
+      data: meses.map(m=>{ const r=heLojaData.find(d=>d.loja===l&&d.mes===m); return r?+(r.he50v+r.he100v).toFixed(0):0; }),
+      borderColor:storeColors[l], backgroundColor:storeColors[l]+'22', borderWidth:2,
+      pointBackgroundColor:storeColors[l], pointRadius:5, fill:false, tension:.3
+    }))},
+    options:{ plugins:{legend:{...baseLegend}}, scales:{...baseScales, y:{...baseScales.y,ticks:{...baseScales.y.ticks,callback:v=>'R$'+v.toLocaleString('pt-BR')}}} }
+  });
+
+  // Proporção HE 100% do total
+  const pcts100 = byLoja.map(r=>{ const t=r.he50h+r.he100h; return t?+(r.he100h/t*100).toFixed(1):0; });
+  chartHeProporcao = new Chart(document.getElementById('chartHeProporcao'), {
+    type:'bar',
+    data:{ labels:lojas, datasets:[{ label:'HE 100% do total (%)', data:pcts100,
+      backgroundColor:pcts100.map(p=>p>20?'#ef444499':'#6b739499'), borderColor:pcts100.map(p=>p>20?'#ef4444':'#6b7394'), borderWidth:2, borderRadius:6 }]},
+    options:{ plugins:{legend:{display:false}}, scales:{...baseScales, y:{...baseScales.y, max:100, ticks:{...baseScales.y.ticks,callback:v=>v+'%'}}} }
+  });
+}
+
+function buildHeRanking() {
+  const limiar = +(document.getElementById('he-limiar')?.value||40);
+  const ind = getHeInd();
+
+  // group by nome+loja+mes, sum hours
+  const map = {};
+  ind.forEach(r => {
+    const key = `${r.nome}||${r.loja}||${r.mes}`;
+    if (!map[key]) map[key] = { nome:r.nome, loja:r.loja, mes:r.mes, h50:0, h100:0 };
+    map[key].h50  += r.h50;
+    map[key].h100 += r.h100;
+  });
+
+  const rows = Object.values(map)
+    .map(r=>({ ...r, total:r.h50+r.h100 }))
+    .sort((a,b)=>b.total-a.total);
+
+  const tbody = document.getElementById('bodyHeRanking');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">Nenhum dado para os filtros selecionados</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => {
+    const badge = r.total >= limiar
+      ? `<span class="badge badge-emp">🔴 Crítico</span>`
+      : r.total >= limiar*0.7
+      ? `<span class="badge badge-empresa">🟡 Atenção</span>`
+      : `<span class="badge badge-ativo">🟢 Normal</span>`;
+    const situacao = r.h100/r.total > 0.4
+      ? `<span style="font-size:11px;color:var(--yellow)">⚠ muito HE 100%</span>`
+      : r.total >= limiar
+      ? `<span style="font-size:11px;color:var(--red)">redistribuir carga</span>`
+      : `<span style="font-size:11px;color:var(--muted)">normal</span>`;
+    return `<tr>
+      <td>${badge}</td>
+      <td style="font-weight:500;font-size:12px">${r.nome}</td>
+      <td><span class="badge badge-${r.loja.toLowerCase()}">${r.loja}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${r.mes}</td>
+      <td style="text-align:right;font-family:monospace;font-size:12px">${r.h50.toFixed(1)}h</td>
+      <td style="text-align:right;font-family:monospace;font-size:12px;color:${r.h100>10?'var(--red)':'inherit'}">${r.h100.toFixed(1)}h</td>
+      <td style="text-align:right;font-family:monospace;font-size:13px;font-weight:700">${r.total.toFixed(1)}h</td>
+      <td style="text-align:right;font-size:12px;color:var(--muted)">—</td>
+      <td>${situacao}</td>
+    </tr>`;
+  }).join('');
+}
+
+function buildHeAlertas() {
+  const d = heLojaData;
+  const ind = heIndividual;
+  const alertas = [];
+
+  // Alerta 1: HE % > 5%
+  d.forEach(r => {
+    const pct = r.prov ? (r.he50v+r.he100v)/r.prov*100 : 0;
+    if (pct > 5) alertas.push({
+      tipo:'red', titulo:'HE acima de 5% dos proventos',
+      desc:`${r.loja} em ${r.mes}: ${pct.toFixed(1)}% dos proventos foi em horas extras. Acima do limiar — custo equivalente a uma nova contratação.`
+    });
+  });
+
+  // Alerta 2: HE 100% acima de 20% do total de horas
+  d.forEach(r => {
+    const tot = r.he50h + r.he100h;
+    if (!tot) return;
+    const pct = r.he100h/tot*100;
+    if (pct > 20) alertas.push({
+      tipo:'yellow', titulo:'Alta proporção de HE 100%',
+      desc:`${r.loja} em ${r.mes}: ${pct.toFixed(0)}% das horas extras foram a 100%. Indica escala ineficiente ou banco de horas esgotado.`
+    });
+  });
+
+  // Alerta 3: colaborador no top em 2+ meses consecutivos
+  const meses = ['Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26'];
+  const topPerMes = meses.map(m => {
+    const rows = ind.filter(r=>r.mes===m).map(r=>({...r,total:r.h50+r.h100})).sort((a,b)=>b.total-a.total).slice(0,5);
+    return rows.map(r=>r.nome);
+  });
+  if (topPerMes.length >= 2) {
+    const recorrentes = topPerMes[0].filter(n=>topPerMes.slice(1).some(top=>top.includes(n)));
+    recorrentes.forEach(n => {
+      alertas.push({
+        tipo:'red', titulo:'Dependência de colaborador',
+        desc:`${n} aparece no top 5 de HE em múltiplos meses. Risco operacional e trabalhista — verificar redistribuição de tarefas ou necessidade de contratação.`
+      });
+    });
+  }
+
+  // Alerta fixo: CAX abertura
+  alertas.push({
+    tipo:'blue', titulo:'CAX Jul/25 — pico de abertura (normalizado)',
+    desc:`CAX realizou 592h de extras em julho (R$7.852 — 10,7% dos proventos) em função da abertura com 24 admissões simultâneas. Em agosto caiu para 57h (1,0%). O pico foi esperado e não se repetiu.`
+  });
+
+  // Alerta dinâmico: Nov/25 CAM
+  const camNov = d.find(r=>r.loja==='CAM'&&r.mes==='Nov/25');
+  if (camNov) {
+    const pctNov = camNov.prov ? (camNov.he50v+camNov.he100v)/camNov.prov*100 : 0;
+    if (pctNov > 4) alertas.push({
+      tipo:'red', titulo:'CAM Nov/25 — volume de HE elevado',
+      desc:`CAM acumulou 391h de extras em novembro (${pctNov.toFixed(1)}% dos proventos = R$${(camNov.he50v+camNov.he100v).toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0})}). Alex Cavalcante e José Carlos figuram no topo pelo segundo mês seguido. Avaliar escala ou contratação.`
+    });
+  }
+
+  const colors = { red:'rgba(239,68,68,.12)', yellow:'rgba(234,179,8,.12)', blue:'rgba(59,130,246,.1)' };
+  const borders = { red:'rgba(239,68,68,.3)', yellow:'rgba(234,179,8,.3)', blue:'rgba(59,130,246,.25)' };
+  const icons   = { red:'🔴', yellow:'🟡', blue:'🔵' };
+
+  document.getElementById('he-alertas').innerHTML = alertas.map(a=>`
+    <div style="background:${colors[a.tipo]};border:1px solid ${borders[a.tipo]};border-radius:12px;padding:16px 18px">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:7px;color:var(--text)">${icons[a.tipo]} ${a.titulo}</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6">${a.desc}</div>
+    </div>`).join('');
 }
 
 
