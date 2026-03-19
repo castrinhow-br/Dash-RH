@@ -175,7 +175,7 @@
     margin-bottom: 4px;
   }
   .chart-desc { font-size: 11px; color: var(--muted); margin-bottom: 16px; }
-  .chart-wrap { position: relative; }
+  .chart-wrap { position: relative; height: 200px; }
 
   /* ── TABLE ── */
   .table-card {
@@ -503,17 +503,17 @@
     <div class="chart-card">
       <div class="chart-title">Admissões por Mês</div>
       <div class="chart-desc">Volume de novos contratados (todas as lojas)</div>
-      <div class="chart-wrap"><canvas id="chartAdmissoes" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartAdmissoes"></canvas></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Distribuição por Área</div>
       <div class="chart-desc">Função / Setor dos colaboradores admitidos</div>
-      <div class="chart-wrap"><canvas id="chartArea" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartArea"></canvas></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Tempo Médio até Desligamento</div>
       <div class="chart-desc">Dias corridos desde admissão até saída (desligados)</div>
-      <div class="chart-wrap"><canvas id="chartTempo" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartTempo"></canvas></div>
     </div>
   </div>
 
@@ -625,29 +625,29 @@
     <div class="chart-card">
       <div class="chart-title">Iniciativa por Loja</div>
       <div class="chart-desc">Empresa vs. Empregado por unidade</div>
-      <div class="chart-wrap"><canvas id="chartMotivoLoja" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartMotivoLoja"></canvas></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Tipo de Rescisão</div>
       <div class="chart-desc">Como se deu o desligamento</div>
-      <div class="chart-wrap"><canvas id="chartTipoRescisao" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartTipoRescisao"></canvas></div>
     </div>
   </div>
   <div class="charts-grid three" style="margin-bottom:28px">
     <div class="chart-card">
       <div class="chart-title">Desligamentos por Setor</div>
       <div class="chart-desc">Quais áreas têm mais saídas</div>
-      <div class="chart-wrap"><canvas id="chartDesligArea" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartDesligArea"></canvas></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Desligamentos por Função</div>
       <div class="chart-desc">Top 8 funções com mais saídas</div>
-      <div class="chart-wrap"><canvas id="chartDesligFuncao" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartDesligFuncao"></canvas></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Tempo até sair × Iniciativa</div>
       <div class="chart-desc">Média de dias: empresa vs. empregado</div>
-      <div class="chart-wrap"><canvas id="chartTempoMotivo" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartTempoMotivo"></canvas></div>
     </div>
   </div>
 
@@ -760,12 +760,12 @@
       <div class="chart-card">
         <div class="chart-title">Tempo Médio de Permanência</div>
         <div class="chart-desc">Dias médios dos desligados por loja</div>
-        <div class="chart-wrap"><canvas id="chartScorecardTempo" height="120"></canvas></div>
+        <div class="chart-wrap" style="height:120px"><canvas id="chartScorecardTempo"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-title">Iniciativa de Saída por Loja</div>
         <div class="chart-desc">Empresa vs. Empregado</div>
-        <div class="chart-wrap"><canvas id="chartScorecardMotivo" height="120"></canvas></div>
+        <div class="chart-wrap" style="height:120px"><canvas id="chartScorecardMotivo"></canvas></div>
       </div>
     </div>
   </div>
@@ -906,12 +906,12 @@
     <div class="chart-card">
       <div class="chart-title">Evolução · Proventos Totais</div>
       <div class="chart-desc">Proventos brutos mensais por loja (R$)</div>
-      <div class="chart-wrap"><canvas id="chartFolhaProv" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartFolhaProv"></canvas></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">Custo Total Empresa · INSS + FGTS</div>
       <div class="chart-desc">Encargos patronais mensais por loja (R$)</div>
-      <div class="chart-wrap"><canvas id="chartFolhaEncargos" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartFolhaEncargos"></canvas></div>
     </div>
   </div>
 
@@ -924,12 +924,12 @@
     <div class="chart-card">
       <div class="chart-title">Custo HE por Loja</div>
       <div class="chart-desc">50%/65% vs 100%/70% — R$ por período selecionado</div>
-      <div class="chart-wrap"><canvas id="chartHeLoja" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartHeLoja"></canvas></div>
     </div>
     <div class="chart-card">
       <div class="chart-title">HE como % dos Proventos</div>
       <div class="chart-desc">Limite de alerta em 5% — acima indica necessidade de contratação</div>
-      <div class="chart-wrap"><canvas id="chartHePct" height="220"></canvas></div>
+      <div class="chart-wrap" style="height:220px"><canvas id="chartHePct"></canvas></div>
     </div>
   </div>
 
@@ -1323,6 +1323,10 @@ const baseScales = {
   y: { ticks:{ color:TICK_COLOR, font:{family:FONT,size:11} }, grid:{ color:GRID_COLOR } }
 };
 const baseLegend = { labels:{ color:'#e8eaf0', font:{family:FONT}, padding:12 } };
+
+// Fix: Chart.js 4.x responsive mode ignores canvas height attribute.
+// Setting maintainAspectRatio=false makes charts fill the .chart-wrap container height.
+Chart.defaults.maintainAspectRatio = false;
 
 function buildCharts() {
   destroyCharts();
@@ -2422,16 +2426,4 @@ function buildFolhaCharts() {
   });
 }
 const ALL_MESES = ['Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26'];
-let activeMeses = new Set(ALL_MESES); // "Todos" = conjunto completo
-let activeHeLoja = 'TODAS';
-let chartHeLoja, chartHePct, chartHeHoras, chartHeEvolucao, chartHeProporcao;
-
-function getHeData() {
-  return heLojaData.filter(d =>
-    activeMeses.has(d.mes) &&
-    (activeHeLoja === 'TODAS' || d.loja === activeHeLoja)
-  );
-}
-function getHeInd() {
-  return heIndividual.filter(d =>
-    acti
+let activeMeses = new Set(ALL_MESES); // "Todos" = conjunto
