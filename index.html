@@ -885,6 +885,7 @@
       <button class="pill" data-mes="Nov/25" onclick="setMesFilter('Nov/25',this)" style="padding:4px 12px;font-size:12px">Nov 2025</button>
       <button class="pill" data-mes="Dez/25" onclick="setMesFilter('Dez/25',this)" style="padding:4px 12px;font-size:12px">Dez 2025</button>
       <button class="pill" data-mes="Jan/26" onclick="setMesFilter('Jan/26',this)" style="padding:4px 12px;font-size:12px">Jan 2026</button>
+      <button class="pill" data-mes="Fev/26" onclick="setMesFilter('Fev/26',this)" style="padding:4px 12px;font-size:12px">Fev 2026</button>
     </div>
   </div>
   <!-- Grupo Loja -->
@@ -2141,6 +2142,11 @@ const heLojaData = [
   { mes:'Jan/26', loja:'CAV', prov:36416.36,  he50v:578.40,   he100v:69.38,    he50h:46.18,  he100h:5.12   },
   { mes:'Jan/26', loja:'CAX', prov:74148.53,  he50v:801.29,   he100v:90.59,    he50h:63.82,  he100h:5.45   },
   { mes:'Jan/26', loja:'SLM', prov:51862.77,  he50v:264.15,   he100v:26.70,    he50h:22.75,  he100h:1.63   },
+  // Fevereiro 2026 — todas as lojas — fonte: Resumo da Folha 02/2026
+  { mes:'Fev/26', loja:'CAM', prov:103852.47, he50v:2771.19, he100v:1401.89, he50h:223.32, he100h:90.02 },
+  { mes:'Fev/26', loja:'CAV', prov:44957.27,  he50v:684.71,  he100v:23.37,  he50h:54.82,  he100h:1.75  },
+  { mes:'Fev/26', loja:'CAX', prov:67226.22,  he50v:678.61,  he100v:61.61,  he50h:54.62,  he100h:3.50  },
+  { mes:'Fev/26', loja:'SLM', prov:55602.29,  he50v:463.70,  he100v:28.00,  he50h:40.80,  he100h:1.77  },
 ];
 
 const heIndividual = [
@@ -2325,6 +2331,71 @@ const heIndividual = [
   { nome:'Joelson dos Santos Souza',        loja:'SLM', mes:'Jan/26', h50:2.23,  h100:0     },
   { nome:'Severino Antero da Silva',        loja:'SLM', mes:'Jan/26', h50:1.88,  h100:0.57  },
   { nome:'Erick Alves Costa',               loja:'SLM', mes:'Jan/26', h50:1.20,  h100:1.15  },
+  // ── Fevereiro 2026 ──────────────────────────────────────────────────────────
+  // CAV — EXTRAS 65% / 70% (fonte: EXTRA_FEV_CAV)
+  { nome:'José Pedro Xavier Monteiro',      loja:'CAV', mes:'Fev/26', h50:25.50, h100:0.82 },
+  { nome:'Ricardo José Basílio',            loja:'CAV', mes:'Fev/26', h50:11.07, h100:0    },
+  { nome:'Ademar Ferreira de Morais Neto',  loja:'CAV', mes:'Fev/26', h50:4.03,  h100:0.60 },
+  { nome:'Wellton Rodrigues da Silva',      loja:'CAV', mes:'Fev/26', h50:3.57,  h100:0.33 },
+  { nome:'Iuri Ubiratan da Silva',          loja:'CAV', mes:'Fev/26', h50:2.30,  h100:0    },
+  { nome:'Maria Verônica dos Santos',       loja:'CAV', mes:'Fev/26', h50:2.33,  h100:0    },
+  { nome:'Ana Clécia de Oliveira Vieira',   loja:'CAV', mes:'Fev/26', h50:1.67,  h100:0    },
+  { nome:'Valdete Ferreira da Rocha',       loja:'CAV', mes:'Fev/26', h50:1.40,  h100:0    },
+  // CAX — EXTRAS 50% / 80% (fonte: EXTRA_FEV_CAX)
+  { nome:'Carlos Henrique dos Santos',      loja:'CAX', mes:'Fev/26', h50:18.62, h100:0    },
+  { nome:'Kamilla Mayara Braga',            loja:'CAX', mes:'Fev/26', h50:13.27, h100:0    },
+  { nome:'Carlos Alberto Araujo da Costa',  loja:'CAX', mes:'Fev/26', h50:8.10,  h100:0    },
+  { nome:'Mateus Pereira Dionísio',         loja:'CAX', mes:'Fev/26', h50:3.72,  h100:0    },
+  { nome:'Eduardo Claudino de Lima',        loja:'CAX', mes:'Fev/26', h50:3.08,  h100:0    },
+  { nome:'Kaio Enrique de Lima Silva',      loja:'CAX', mes:'Fev/26', h50:2.62,  h100:0.22 },
+  { nome:'Natália Almeida Freitas',         loja:'CAX', mes:'Fev/26', h50:2.45,  h100:0    },
+  { nome:'Larissa Ferreira da Silva',       loja:'CAX', mes:'Fev/26', h50:2.23,  h100:0    },
+  { nome:'Julia Carolina da Silva',         loja:'CAX', mes:'Fev/26', h50:2.08,  h100:0    },
+  { nome:'Adilson Gonçalves Braz Junior',   loja:'CAX', mes:'Fev/26', h50:1.90,  h100:0    },
+  { nome:'Ednalva Henrique Cavalcanti',     loja:'CAX', mes:'Fev/26', h50:1.65,  h100:0    },
+  { nome:'Eduardo de Almeida Lopes',        loja:'CAX', mes:'Fev/26', h50:1.17,  h100:0.35 },
+  { nome:'Girlene Cássia Aguiar',           loja:'CAX', mes:'Fev/26', h50:1.18,  h100:0.18 },
+  // SLM — EXTRAS 50% / 100% (fonte: EXTRA_FEV_SLM — sem Resumo da Folha)
+  { nome:'Joelson dos Santos Souza',        loja:'SLM', mes:'Fev/26', h50:8.02,  h100:0.20 },
+  { nome:'Ananias Santana do Nascimento',   loja:'SLM', mes:'Fev/26', h50:6.85,  h100:0    },
+  { nome:'Anderson Constantino de Arruda',  loja:'SLM', mes:'Fev/26', h50:5.13,  h100:0    },
+  { nome:'Richardson Agapito Santos',       loja:'SLM', mes:'Fev/26', h50:3.95,  h100:1.20 },
+  { nome:'Lucas Felipe do Nascimento',      loja:'SLM', mes:'Fev/26', h50:3.40,  h100:0.23 },
+  { nome:'Rai Fernandes de Andrade',        loja:'SLM', mes:'Fev/26', h50:2.77,  h100:0.23 },
+  { nome:'Wagner Francisco de França',      loja:'SLM', mes:'Fev/26', h50:2.32,  h100:1.37 },
+  { nome:'Julia Carla Oliveira da Silva',   loja:'SLM', mes:'Fev/26', h50:2.32,  h100:0    },
+  { nome:'Thayna Chrystine Cabral',         loja:'SLM', mes:'Fev/26', h50:1.95,  h100:0    },
+  { nome:'Jefferson Ywry Batista',          loja:'SLM', mes:'Fev/26', h50:0.82,  h100:0    },
+  { nome:'Jessika Regina da Silva',         loja:'SLM', mes:'Fev/26', h50:0.42,  h100:0.57 },
+  { nome:'Rosiane de Oliveira Silva',       loja:'SLM', mes:'Fev/26', h50:0.70,  h100:0.20 },
+  { nome:'Jean Tude Souza',                 loja:'SLM', mes:'Fev/26', h50:0.38,  h100:0.45 },
+  { nome:'Tiago Manoel de Sá Silva',        loja:'SLM', mes:'Fev/26', h50:0.67,  h100:0    },
+  { nome:'Gleibson Miguel da Silva',        loja:'SLM', mes:'Fev/26', h50:0.67,  h100:0    },
+  // CAM — EXTRAS 50% / 100% (fonte: EXTRA_FEV_CAM)
+  { nome:'Evandro de Santana Gomes',        loja:'CAM', mes:'Fev/26', h50:32.32, h100:24.90 },
+  { nome:'Eduardo Batista da Silva',        loja:'CAM', mes:'Fev/26', h50:30.42, h100:18.62 },
+  { nome:'Otávio Claudino Nazaro',          loja:'CAM', mes:'Fev/26', h50:25.90, h100:17.18 },
+  { nome:'Melquesedek M. do Nascimento',    loja:'CAM', mes:'Fev/26', h50:16.68, h100:1.07  },
+  { nome:'Emanuel das Neves Silva',         loja:'CAM', mes:'Fev/26', h50:15.47, h100:9.82  },
+  { nome:'Guilherme da Silva Santos',       loja:'CAM', mes:'Fev/26', h50:13.08, h100:9.50  },
+  { nome:'Rogerio Manoel dos Anjos',        loja:'CAM', mes:'Fev/26', h50:12.33, h100:3.02  },
+  { nome:'Patricia da Conceição Guedes',    loja:'CAM', mes:'Fev/26', h50:8.40,  h100:1.15  },
+  { nome:'Robson Gomes de Sousa',           loja:'CAM', mes:'Fev/26', h50:6.95,  h100:1.82  },
+  { nome:'Rejane Rosa Balbino da Silva',    loja:'CAM', mes:'Fev/26', h50:3.65,  h100:0     },
+  { nome:'Letícia Thamires de Lima Silva',  loja:'CAM', mes:'Fev/26', h50:2.85,  h100:0     },
+  { nome:'Emerson Gustavo Alves da Silva',  loja:'CAM', mes:'Fev/26', h50:2.77,  h100:1.97  },
+  { nome:'Moisés Eugênio Lopes',            loja:'CAM', mes:'Fev/26', h50:2.22,  h100:0     },
+  { nome:'Andrea Vicente Arruda',           loja:'CAM', mes:'Fev/26', h50:1.70,  h100:0     },
+  { nome:'Hellen Gleyce Alves Rodrigues',   loja:'CAM', mes:'Fev/26', h50:1.17,  h100:0     },
+  { nome:'Tiago Henrique Freitas',          loja:'CAM', mes:'Fev/26', h50:1.00,  h100:0     },
+  { nome:'Thalles Yago Barbosa',            loja:'CAM', mes:'Fev/26', h50:1.32,  h100:0     },
+  { nome:'Thalia Débora de Souza',          loja:'CAM', mes:'Fev/26', h50:0.53,  h100:1.05  },
+  { nome:'Valeria Maria Santos da Silva',   loja:'CAM', mes:'Fev/26', h50:0.63,  h100:0.77  },
+  { nome:'Maurilio Silvestre do Nascimento',loja:'CAM', mes:'Fev/26', h50:0.93,  h100:0.18  },
+  { nome:'João José Romano dos Santos Jr.', loja:'CAM', mes:'Fev/26', h50:0.88,  h100:0.30  },
+  { nome:'Cleverson Alcantara dos Santos',  loja:'CAM', mes:'Fev/26', h50:0.72,  h100:0.18  },
+  { nome:'Francisco José de Andrade Filho', loja:'CAM', mes:'Fev/26', h50:0.40,  h100:0.28  },
+  { nome:'João Danilo dos Anjos Silva',     loja:'CAM', mes:'Fev/26', h50:0.18,  h100:0     },
 ];
 
 // ─────────────────────────────────────────────
@@ -2361,6 +2432,11 @@ const folhaData = [
   { mes:'Jan/26', loja:'CAV', prov:36416.36,  liq:17674.00, inss:11806.35, fgts:2697.91 },
   { mes:'Jan/26', loja:'CAX', prov:74148.53,  liq:25146.00, inss:23556.53, fgts:5618.88 },
   { mes:'Jan/26', loja:'SLM', prov:51862.77,  liq:18569.00, inss:14565.45, fgts:3332.43 },
+  // Fevereiro 2026 — todas as lojas — fonte: Resumo da Folha 02/2026
+  { mes:'Fev/26', loja:'CAM', prov:103852.47, liq:52500.00, inss:25369.38, fgts:5457.12 },
+  { mes:'Fev/26', loja:'CAV', prov:44957.27,  liq:15515.00, inss:13634.66, fgts:3360.64 },
+  { mes:'Fev/26', loja:'CAX', prov:67226.22,  liq:27443.00, inss:23547.14, fgts:5157.50 },
+  { mes:'Fev/26', loja:'SLM', prov:55602.29,  liq:15175.00, inss:15740.35, fgts:3876.22 },
 ];
 
 let chartFolhaProv, chartFolhaEncargos;
@@ -2475,7 +2551,7 @@ function buildFolhaCharts() {
     }}
   });
 }
-const ALL_MESES = ['Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26'];
+const ALL_MESES = ['Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Jan/26','Fev/26'];
 let activeMeses = new Set(ALL_MESES); // "Todos" = conjunto completo
 let activeHeLoja = 'TODAS';
 let chartHeLoja, chartHePct, chartHeHoras, chartHeEvolucao, chartHeProporcao;
