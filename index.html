@@ -427,6 +427,23 @@
     /* KPI HE */
     #he-kpi-grid { grid-template-columns: repeat(2,1fr) !important; }
 
+    /* Rescisão — KPI grid 2x2, tabela scroll, charts coluna */
+    #resc-kpi-grid { grid-template-columns: repeat(2,1fr) !important; }
+    #resc-kpi-grid .kpi-value { font-size: 18px !important; }
+    #resc-kpi-grid .kpi-label { font-size: 10px; }
+    .resc-info-banner { font-size: 11px !important; padding: 10px 12px !important; }
+    .resc-charts { grid-template-columns: 1fr !important; }
+    /* Tabela rescisão: scroll + oculta colunas secundárias */
+    #bodyRescisao tr td:nth-child(7),
+    #bodyRescisao tr td:nth-child(10),
+    #footRescisao tr td:nth-child(7),
+    #bodyRescisao tr td:nth-child(10),
+    table thead tr th:nth-child(7),
+    table thead tr th:nth-child(10) { display: none; }
+    #bodyRescisao tr td:nth-child(4),
+    #bodyRescisao tr td:nth-child(5),
+    #bodyRescisao tr td:nth-child(6) { font-size: 11px !important; }
+
     /* Filtro da folha — coluna */
     .he-filter-bar {
       flex-direction: column !important;
@@ -439,6 +456,9 @@
     /* Pills pequenos */
     .pill { padding: 4px 10px; font-size: 11px; }
   }
+
+  /* KPI HE e Rescisão — 4 colunas no desktop */
+  #he-kpi-grid, #resc-kpi-grid { grid-template-columns: repeat(4, 1fr); }
 
   /* Wrapper scroll para tabelas */
   .table-scroll-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -924,13 +944,13 @@
   <!-- ── CUSTO DE RESCISÃO ── -->
   <div class="section-title">💸 Custo de Rescisão · Verbas, Multas e FGTS</div>
 
-  <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:var(--muted);line-height:1.6">
+  <div class="resc-info-banner" style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:var(--muted);line-height:1.6">
     📋 <strong style="color:var(--text)">Fonte:</strong> Resumo da Folha (por empresa/competência).
     Custo total = Líquido rescisão + Multa Art.480 + FGTS rescisório.
     <strong style="color:var(--yellow)">Rubrica 51</strong> (liq. resc.) · <strong style="color:var(--yellow)">842</strong> (multa) · <strong style="color:var(--yellow)">FGTS resc.</strong> = informativos do resumo.
   </div>
 
-  <div id="resc-kpi-grid" class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px"></div>
+  <div id="resc-kpi-grid" class="kpi-grid" style="margin-bottom:20px"></div>
 
   <div class="table-card" style="margin-bottom:20px">
     <div class="table-header-bar">
@@ -939,8 +959,8 @@
         <div class="table-desc-text">Ordenado por custo total decrescente</div>
       </div>
     </div>
-    <div class="table-scroll-wrap">
-    <table>
+    <div class="table-scroll-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+    <table style="min-width:700px">
       <thead><tr>
         <th>Mês</th>
         <th>Loja</th>
@@ -959,7 +979,7 @@
     </div>
   </div>
 
-  <div class="charts-grid" style="margin-bottom:28px">
+  <div class="charts-grid resc-charts" style="margin-bottom:28px">
     <div class="chart-card">
       <div class="chart-title">Composição do Custo por Loja</div>
       <div class="chart-desc">Verbas pagas × multas × FGTS rescisório</div>
