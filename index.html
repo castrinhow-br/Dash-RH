@@ -921,7 +921,58 @@
     </div>
   </div>
 
-  <!-- KPIs -->
+  <!-- ── CUSTO DE RESCISÃO ── -->
+  <div class="section-title">💸 Custo de Rescisão · Verbas, Multas e FGTS</div>
+
+  <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:var(--muted);line-height:1.6">
+    📋 <strong style="color:var(--text)">Fonte:</strong> Resumo da Folha (por empresa/competência).
+    Custo total = Líquido rescisão + Multa Art.480 + FGTS rescisório.
+    <strong style="color:var(--yellow)">Rubrica 51</strong> (liq. resc.) · <strong style="color:var(--yellow)">842</strong> (multa) · <strong style="color:var(--yellow)">FGTS resc.</strong> = informativos do resumo.
+  </div>
+
+  <div id="resc-kpi-grid" class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px"></div>
+
+  <div class="table-card" style="margin-bottom:20px">
+    <div class="table-header-bar">
+      <div>
+        <div class="table-title">Detalhamento por Loja e Mês</div>
+        <div class="table-desc-text">Ordenado por custo total decrescente</div>
+      </div>
+    </div>
+    <div class="table-scroll-wrap">
+    <table>
+      <thead><tr>
+        <th>Mês</th>
+        <th>Loja</th>
+        <th style="text-align:right">Demitidos</th>
+        <th style="text-align:right">Líq. Rescisão</th>
+        <th style="text-align:right">Multa Art.480</th>
+        <th style="text-align:right">FGTS Rescisório</th>
+        <th style="text-align:right">incl. 40%</th>
+        <th style="text-align:right">Custo Total</th>
+        <th style="text-align:right">Médio/Demitido</th>
+        <th>Intensidade</th>
+      </tr></thead>
+      <tbody id="bodyRescisao"></tbody>
+      <tfoot id="footRescisao" style="background:var(--surface);font-weight:700;border-top:2px solid var(--border)"></tfoot>
+    </table>
+    </div>
+  </div>
+
+  <div class="charts-grid" style="margin-bottom:28px">
+    <div class="chart-card">
+      <div class="chart-title">Composição do Custo por Loja</div>
+      <div class="chart-desc">Verbas pagas × multas × FGTS rescisório</div>
+      <div class="chart-wrap"><canvas id="chartRescComp" height="220"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Custo Médio por Demitido</div>
+      <div class="chart-desc">Benchmark entre lojas (R$ por desligamento)</div>
+      <div class="chart-wrap"><canvas id="chartRescMedio" height="220"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ── KPIs HE ── -->
   <div class="section-title">Resumo do Período · Horas Extras &amp; Custo</div>
   <div id="he-kpi-grid" class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:28px"></div>
 
@@ -2439,6 +2490,48 @@ const folhaData = [
   { mes:'Fev/26', loja:'SLM', prov:55602.29,  liq:15175.00, inss:15740.35, fgts:3876.22 },
 ];
 
+// ─────────────────────────────────────────────
+//  CUSTO DE RESCISÃO — DADOS (extraídos dos RESUMO da Folha)
+//  liqResc  = rubrica 51 — líquido rescisão efetivamente pago
+//  multaEmp = rubrica 842 — Multa Art.480 (empresa paga ao demitir)
+//  fgtsResc = FGTS rescisório total (inclui 40%, 13º resc., aviso prévio)
+//  fgts40   = apenas o FGTS 40% (multa)
+//  nDeslig  = situações → Demitido
+//  Nota: liqResc = null quando rubrica 51 não consta no resumo
+// ─────────────────────────────────────────────
+const rescisaoData = [
+  // Julho 2025
+  { mes:'Jul/25', loja:'CAM', nDeslig:5, liqResc:10273.00, multaEmp:691.18,  fgtsResc:913.71,  fgts40:119.98 },
+  { mes:'Jul/25', loja:'CAV', nDeslig:3, liqResc:7711.00,  multaEmp:1037.30, fgtsResc:666.58,  fgts40:185.76 },
+  { mes:'Jul/25', loja:'CAX', nDeslig:4, liqResc:2959.00,  multaEmp:2523.73, fgtsResc:201.54,  fgts40:40.77  },
+  { mes:'Jul/25', loja:'SLM', nDeslig:0, liqResc:0,        multaEmp:0,       fgtsResc:0,        fgts40:0      },
+  // Agosto 2025
+  { mes:'Ago/25', loja:'CAM', nDeslig:3, liqResc:1281.00, multaEmp:593.59,  fgtsResc:255.15, fgts40:49.86  },
+  { mes:'Ago/25', loja:'CAV', nDeslig:0, liqResc:0,       multaEmp:0,       fgtsResc:0,       fgts40:0      },
+  { mes:'Ago/25', loja:'CAX', nDeslig:4, liqResc:6354.00, multaEmp:0,       fgtsResc:464.14,  fgts40:93.15  },
+  { mes:'Ago/25', loja:'SLM', nDeslig:1, liqResc:4238.00, multaEmp:0,       fgtsResc:414.68,  fgts40:118.48 },
+  // Setembro 2025
+  { mes:'Set/25', loja:'CAM', nDeslig:3, liqResc:14208.00, multaEmp:0,       fgtsResc:1179.39, fgts40:336.97 },
+  { mes:'Set/25', loja:'CAV', nDeslig:2, liqResc:6958.00,  multaEmp:0,       fgtsResc:637.92,  fgts40:158.82 },
+  { mes:'Set/25', loja:'CAX', nDeslig:1, liqResc:1457.00,  multaEmp:0,       fgtsResc:169.12,  fgts40:48.32  },
+  { mes:'Set/25', loja:'SLM', nDeslig:2, liqResc:12917.00, multaEmp:0,       fgtsResc:1158.69, fgts40:331.05 },
+  // Outubro 2025
+  { mes:'Out/25', loja:'CAM', nDeslig:3, liqResc:1551.00,  multaEmp:184.43,  fgtsResc:155.89,  fgts40:31.68  },
+  { mes:'Out/25', loja:'CAV', nDeslig:1, liqResc:4036.00,  multaEmp:0,       fgtsResc:411.29,  fgts40:117.51 },
+  { mes:'Out/25', loja:'CAX', nDeslig:0, liqResc:0,        multaEmp:0,       fgtsResc:0,        fgts40:0      },
+  { mes:'Out/25', loja:'SLM', nDeslig:2, liqResc:5770.00,  multaEmp:1666.67, fgtsResc:489.11,  fgts40:130.22 },
+  // Janeiro 2026
+  { mes:'Jan/26', loja:'CAM', nDeslig:1, liqResc:0,        multaEmp:1107.68, fgtsResc:17.29,   fgts40:0      },
+  { mes:'Jan/26', loja:'CAV', nDeslig:1, liqResc:153.00,   multaEmp:122.07,  fgtsResc:9.72,    fgts40:0      },
+  { mes:'Jan/26', loja:'CAX', nDeslig:3, liqResc:10429.00, multaEmp:0,       fgtsResc:721.88,  fgts40:85.32  },
+  { mes:'Jan/26', loja:'SLM', nDeslig:1, liqResc:363.00,   multaEmp:0,       fgtsResc:69.61,   fgts40:0      },
+  // Fevereiro 2026
+  { mes:'Fev/26', loja:'CAM', nDeslig:7, liqResc:9089.00, multaEmp:2164.30, fgtsResc:759.52,  fgts40:172.11 },
+  { mes:'Fev/26', loja:'CAV', nDeslig:3, liqResc:4555.00, multaEmp:972.60,  fgtsResc:413.89,  fgts40:117.02 },
+  { mes:'Fev/26', loja:'CAX', nDeslig:1, liqResc:975.87,  multaEmp:1626.46, fgtsResc:56.26,   fgts40:0      },
+  { mes:'Fev/26', loja:'SLM', nDeslig:0, liqResc:0,       multaEmp:0,       fgtsResc:0,        fgts40:0      },
+];
+
 let chartFolhaProv, chartFolhaEncargos;
 
 function getFolhaData() {
@@ -2621,6 +2714,7 @@ function renderFolha() {
   buildHeCharts();
   buildHeRanking();
   buildHeAlertas();
+  buildRescisao();
 }
 
 function buildHeKPIs() {
@@ -2835,6 +2929,130 @@ function buildHeAlertas() {
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:7px;color:var(--text)">${icons[a.tipo]} ${a.titulo}</div>
       <div style="font-size:12px;color:var(--text2);line-height:1.6">${a.desc}</div>
     </div>`).join('');
+}
+
+
+// ─────────────────────────────────────────────
+//  CUSTO DE RESCISÃO — BUILD
+// ─────────────────────────────────────────────
+let chartRescComp, chartRescMedio;
+
+function getRescData() {
+  return rescisaoData.filter(d =>
+    activeMeses.has(d.mes) &&
+    (activeHeLoja === 'TODAS' || d.loja === activeHeLoja)
+  );
+}
+
+function buildRescisao() {
+  if (chartRescComp)  { chartRescComp.destroy();  chartRescComp  = null; }
+  if (chartRescMedio) { chartRescMedio.destroy();  chartRescMedio = null; }
+
+  const d = getRescData();
+  const fmt = v => v ? 'R$'+v.toLocaleString('pt-BR',{minimumFractionDigits:0,maximumFractionDigits:0}) : '—';
+
+  const custoFn = r => r.liqResc + r.multaEmp + r.fgtsResc;
+
+  // KPIs
+  const totCusto   = d.reduce((a,r)=>a+custoFn(r), 0);
+  const totDeslig  = d.reduce((a,r)=>a+r.nDeslig, 0);
+  const totMultas  = d.reduce((a,r)=>a+r.multaEmp+r.fgts40, 0);
+  const medPorDem  = totDeslig ? totCusto/totDeslig : 0;
+
+  document.getElementById('resc-kpi-grid').innerHTML = [
+    { label:'Custo Total Rescisão', value: fmt(totCusto),   color: totCusto>10000?'red':'yellow', sub: `${d.length} registros` },
+    { label:'Total Demitidos',      value: totDeslig,        color:'orange', sub:'período filtrado' },
+    { label:'Multas (480 + 40%)',   value: fmt(totMultas),   color: totMultas>2000?'red':'yellow', sub:'custo evitável' },
+    { label:'Custo Médio/Demitido', value: fmt(medPorDem),   color:'purple', sub:'referência de planejamento' },
+  ].map(k=>`<div class="kpi-card ${k.color}">
+    <div class="kpi-label">${k.label}</div>
+    <div class="kpi-value" style="font-size:22px">${k.value}</div>
+    <div class="kpi-sub">${k.sub}</div>
+  </div>`).join('');
+
+  // Table
+  const sorted = [...d].sort((a,b)=>custoFn(b)-custoFn(a));
+  const maxCusto = Math.max(...sorted.map(custoFn), 1);
+
+  document.getElementById('bodyRescisao').innerHTML = sorted.map(r => {
+    const custo = custoFn(r);
+    const medio = r.nDeslig ? custo/r.nDeslig : 0;
+    const pct   = (custo/maxCusto*100).toFixed(0);
+    const bar   = `<div style="height:6px;border-radius:3px;background:var(--border);overflow:hidden;min-width:80px">
+      <div style="height:100%;width:${pct}%;background:${custo>8000?'var(--red)':custo>4000?'var(--yellow)':'var(--green)'};border-radius:3px"></div></div>`;
+    const liqFmt = r.liqResc ? fmt(r.liqResc) : '<span style="color:var(--muted);font-size:11px">—</span>';
+    return `<tr>
+      <td style="font-size:12px;color:var(--muted)">${r.mes}</td>
+      <td><span class="badge badge-${r.loja.toLowerCase()}">${r.loja}</span></td>
+      <td style="text-align:right;font-weight:700;color:${r.nDeslig>3?'var(--red)':r.nDeslig>1?'var(--yellow)':'var(--muted)'}">${r.nDeslig||'—'}</td>
+      <td style="text-align:right;font-family:monospace;font-size:12px">${liqFmt}</td>
+      <td style="text-align:right;font-family:monospace;font-size:12px;color:${r.multaEmp>1000?'var(--red)':'inherit'}">${fmt(r.multaEmp)||'—'}</td>
+      <td style="text-align:right;font-family:monospace;font-size:12px">${fmt(r.fgtsResc)||'—'}</td>
+      <td style="text-align:right;font-family:monospace;font-size:11px;color:var(--muted)">${r.fgts40?fmt(r.fgts40):'—'}</td>
+      <td style="text-align:right;font-family:monospace;font-size:13px;font-weight:700">${custo?fmt(custo):'—'}</td>
+      <td style="text-align:right;font-family:monospace;font-size:12px">${medio?fmt(medio):'—'}</td>
+      <td>${bar}</td>
+    </tr>`;
+  }).join('');
+
+  // Footer totals
+  const totLiq  = d.reduce((a,r)=>a+(r.liqResc||0),0);
+  const totMult = d.reduce((a,r)=>a+r.multaEmp,0);
+  const totFgts = d.reduce((a,r)=>a+r.fgtsResc,0);
+  const totF40  = d.reduce((a,r)=>a+r.fgts40,0);
+  document.getElementById('footRescisao').innerHTML = `<tr>
+    <td colspan="2" style="padding:10px 16px">Total</td>
+    <td style="text-align:right;padding:10px 16px">${totDeslig}</td>
+    <td style="text-align:right;padding:10px 16px;font-family:monospace">${fmt(totLiq)}</td>
+    <td style="text-align:right;padding:10px 16px;font-family:monospace;color:var(--red)">${fmt(totMult)}</td>
+    <td style="text-align:right;padding:10px 16px;font-family:monospace">${fmt(totFgts)}</td>
+    <td style="text-align:right;padding:10px 16px;font-family:monospace;color:var(--muted)">${fmt(totF40)}</td>
+    <td style="text-align:right;padding:10px 16px;font-family:monospace;color:var(--accent)">${fmt(totCusto)}</td>
+    <td style="text-align:right;padding:10px 16px;font-family:monospace">${fmt(medPorDem)}</td>
+    <td></td>
+  </tr>`;
+
+  // Charts
+  const lojas = ['CAM','SLM','CAX','CAV'];
+  const byLoja = lojas.map(l => {
+    const rows = d.filter(r=>r.loja===l);
+    return {
+      liq:  rows.reduce((a,r)=>a+(r.liqResc||0),0),
+      mult: rows.reduce((a,r)=>a+r.multaEmp,0),
+      fgts: rows.reduce((a,r)=>a+r.fgtsResc,0),
+      nDes: rows.reduce((a,r)=>a+r.nDeslig,0),
+    };
+  });
+
+  chartRescComp = new Chart(document.getElementById('chartRescComp'), {
+    type:'bar',
+    data:{ labels:lojas, datasets:[
+      { label:'Líq. Rescisão',  data:byLoja.map(r=>+r.liq.toFixed(0)),  backgroundColor:'#3b82f699', borderColor:'#3b82f6', borderWidth:2, borderRadius:4 },
+      { label:'Multa Art.480',  data:byLoja.map(r=>+r.mult.toFixed(0)), backgroundColor:'#ef444499', borderColor:'#ef4444', borderWidth:2, borderRadius:4 },
+      { label:'FGTS Rescisório',data:byLoja.map(r=>+r.fgts.toFixed(0)), backgroundColor:'#f59e0b99', borderColor:'#f59e0b', borderWidth:2, borderRadius:4 },
+    ]},
+    options:{ plugins:{legend:{...baseLegend}}, scales:{
+      ...baseScales,
+      x:{...baseScales.x, stacked:true},
+      y:{...baseScales.y, stacked:true, ticks:{...baseScales.y.ticks, callback:v=>'R$'+Math.round(v).toLocaleString('pt-BR')}}
+    }}
+  });
+
+  const medios = byLoja.map(r=>r.nDes?+((r.liq+r.mult+r.fgts)/r.nDes).toFixed(0):0);
+  chartRescMedio = new Chart(document.getElementById('chartRescMedio'), {
+    type:'bar',
+    data:{ labels:lojas, datasets:[{
+      label:'R$/demitido',
+      data: medios,
+      backgroundColor:lojas.map(l=>(storeColors[l]||'#6b7394')+'99'),
+      borderColor:lojas.map(l=>storeColors[l]||'#6b7394'),
+      borderWidth:2, borderRadius:6
+    }]},
+    options:{ plugins:{legend:{display:false}}, scales:{
+      ...baseScales,
+      y:{...baseScales.y, ticks:{...baseScales.y.ticks, callback:v=>'R$'+Math.round(v).toLocaleString('pt-BR')}}
+    }}
+  });
 }
 
 
