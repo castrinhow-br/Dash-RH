@@ -410,8 +410,13 @@
     .table-card table { min-width: 560px; }
     .table-header-bar { flex-direction: column; gap: 8px; align-items: flex-start; }
 
-    /* Folha grid em coluna */
-    .folha-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    /* Folha grid em coluna única no mobile */
+    .folha-grid { grid-template-columns: 1fr; gap: 10px; }
+
+    /* Card Rede — inner grid em 2 colunas no mobile */
+    .rede-inner-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+    .rede-inner-grid > div { padding: 10px 12px !important; }
+    .rede-inner-grid > div .rede-val { font-size: 15px !important; }
 
     /* Alertas em coluna única */
     #he-alertas { grid-template-columns: 1fr !important; }
@@ -2401,24 +2406,24 @@ function buildFolhaComparativo() {
         <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--empresa);letter-spacing:.04em">REDE</div>
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Consolidado — todas as lojas</div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      <div class="rede-inner-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
         <div style="background:var(--surface);border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
           <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Proventos brutos</div>
-          <div style="font-family:monospace;font-weight:700;font-size:16px;color:var(--text)">${fmt(rede.prov)}</div>
+          <div class="rede-val" style="font-family:monospace;font-weight:700;font-size:16px;color:var(--text)">${fmt(rede.prov)}</div>
         </div>
         <div style="background:var(--surface);border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
           <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Líquido pago</div>
-          <div style="font-family:monospace;font-weight:700;font-size:16px;color:var(--green)">${fmt(rede.liq)}</div>
+          <div class="rede-val" style="font-family:monospace;font-weight:700;font-size:16px;color:var(--green)">${fmt(rede.liq)}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:4px">${rede.prov ? (rede.liq/rede.prov*100).toFixed(1)+'% dos proventos' : '—'}</div>
         </div>
         <div style="background:var(--surface);border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
           <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">INSS total</div>
-          <div style="font-family:monospace;font-weight:700;font-size:16px;color:var(--red)">${fmt(rede.inss)}</div>
+          <div class="rede-val" style="font-family:monospace;font-weight:700;font-size:16px;color:var(--red)">${fmt(rede.inss)}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:4px">${rede.prov ? (rede.inss/rede.prov*100).toFixed(1)+'% dos proventos' : '—'}</div>
         </div>
         <div style="background:var(--surface);border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
           <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">FGTS</div>
-          <div style="font-family:monospace;font-weight:700;font-size:16px;color:var(--yellow)">${fmt(rede.fgts)}</div>
+          <div class="rede-val" style="font-family:monospace;font-weight:700;font-size:16px;color:var(--yellow)">${fmt(rede.fgts)}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:4px">Encargo: ${rede.prov ? ((rede.inss+rede.fgts)/rede.prov*100).toFixed(1)+'% (INSS+FGTS)' : '—'}</div>
         </div>
       </div>
