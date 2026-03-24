@@ -1037,6 +1037,8 @@
         <div class="table-desc-text">Ordenado por total de horas. Alertas automáticos por faixa.</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input id="he-busca" type="text" placeholder="🔍 Buscar colaborador…" oninput="buildHeRanking()"
+          style="background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:4px 10px;font-size:12px;font-family:inherit;width:200px;outline:none">
         <span style="font-size:10px;color:var(--muted)">Limiar crítico:</span>
         <select id="he-limiar" onchange="buildHeRanking()" style="background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:4px 8px;font-size:12px;font-family:inherit">
           <option value="40">40h (padrão)</option>
@@ -2851,6 +2853,7 @@ function buildHeCharts() {
 
 function buildHeRanking() {
   const limiar = +(document.getElementById('he-limiar')?.value||40);
+  const busca = (document.getElementById('he-busca')?.value||'').trim().toLowerCase();
   const ind = getHeInd();
 
   // group by nome+loja+mes, sum hours
@@ -2864,12 +2867,22 @@ function buildHeRanking() {
 
   const rows = Object.values(map)
     .map(r=>({ ...r, total:r.h50+r.h100 }))
+    .filter(r => !busca || r.nome.toLowerCase().includes(busca))
     .sort((a,b)=>b.total-a.total);
 
   const tbody = document.getElementById('bodyHeRanking');
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">Nenhum dado para os filtros selecionados</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px">${busca ? `Nenhum colaborador encontrado para "${busca}"` : 'Nenhum dado para os filtros selecionados'}</td></tr>`;
     return;
+  }
+
+  // Update desc text with count
+  const descEl = document.querySelector('#bodyHeRanking')?.closest('.table-card')?.querySelector('.table-desc-text');
+  if (descEl) {
+    const nomes = [...new Set(rows.map(r=>r.nome))];
+    descEl.textContent = busca
+      ? `${nomes.length} colaborador${nomes.length!==1?'es':''} encontrado${nomes.length!==1?'s':''} · ${rows.length} registro${rows.length!==1?'s':''}`
+      : `Ordenado por total de horas. Alertas automáticos por faixa.`;
   }
 
   tbody.innerHTML = rows.map(r => {
@@ -2883,9 +2896,19 @@ function buildHeRanking() {
       : r.total >= limiar
       ? `<span style="font-size:11px;color:var(--red)">redistribuir carga</span>`
       : `<span style="font-size:11px;color:var(--muted)">normal</span>`;
-    return `<tr>
+    // highlight matched name
+    let nomeDisplay = r.nome;
+    if (busca) {
+      const idx = r.nome.toLowerCase().indexOf(busca);
+      if (idx >= 0) {
+        nomeDisplay = r.nome.slice(0,idx)
+          + `<mark style="background:rgba(249,115,22,.3);color:var(--text);border-radius:2px;padding:0 2px">${r.nome.slice(idx,idx+busca.length)}</mark>`
+          + r.nome.slice(idx+busca.length);
+      }
+    }
+    return `<tr style="${busca?'background:rgba(249,115,22,.04)':''}">
       <td>${badge}</td>
-      <td style="font-weight:500;font-size:12px">${r.nome}</td>
+      <td style="font-weight:500;font-size:12px">${nomeDisplay}</td>
       <td><span class="badge badge-${r.loja.toLowerCase()}">${r.loja}</span></td>
       <td style="font-size:12px;color:var(--muted)">${r.mes}</td>
       <td style="text-align:right;font-family:monospace;font-size:12px">${r.h50.toFixed(1)}h</td>
