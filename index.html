@@ -2940,26 +2940,45 @@ function buildFolhaComparativo() {
   const colorsBorder = { CAM: '#f9731644', SLM: '#3b82f644', CAX: '#a855f744', CAV: '#10b98144' };
   const d = getFolhaData();
 
+  // Rescisão agregada pelo mesmo filtro de meses/loja
+  const rescFiltrado = rescisaoData.filter(r =>
+    activeMeses.has(r.mes) &&
+    (activeHeLoja === 'TODAS' || r.loja === activeHeLoja)
+  );
+
   const agg = lojas.map(l => {
-    const rows = d.filter(r => r.loja === l);
+    const rows  = d.filter(r => r.loja === l);
+    const rrows = rescFiltrado.filter(r => r.loja === l);
+    const liqR  = rrows.reduce((a,r) => a + (r.liqResc  || 0), 0);
+    const multR = rrows.reduce((a,r) => a + (r.multaEmp || 0), 0);
+    const fgtsR = rrows.reduce((a,r) => a + (r.fgtsResc || 0), 0);
+    const nDes  = rrows.reduce((a,r) => a + (r.nDeslig  || 0), 0);
     return {
-      loja: l,
-      prov:  rows.reduce((a,r) => a + r.prov, 0),
-      liq:   rows.reduce((a,r) => a + r.liq,  0),
-      inss:  rows.reduce((a,r) => a + r.inss, 0),
-      fgts:  rows.reduce((a,r) => a + r.fgts, 0),
-      meses: rows.length,
+      loja:   l,
+      prov:   rows.reduce((a,r) => a + r.prov, 0),
+      liq:    rows.reduce((a,r) => a + r.liq,  0),
+      inss:   rows.reduce((a,r) => a + r.inss, 0),
+      fgts:   rows.reduce((a,r) => a + r.fgts, 0),
+      meses:  rows.length,
+      liqR, multR, fgtsR, nDes,
+      rescTotal: liqR + multR + fgtsR,
     };
   });
 
   const fmt = v => 'R$' + Math.round(v).toLocaleString('pt-BR');
+  const fmtOr0 = v => v > 0 ? fmt(v) : '<span style="color:var(--muted)">—</span>';
 
   // Card Rede — soma consolidada
   const rede = {
-    prov: agg.reduce((a,r) => a + r.prov, 0),
-    liq:  agg.reduce((a,r) => a + r.liq,  0),
-    inss: agg.reduce((a,r) => a + r.inss, 0),
-    fgts: agg.reduce((a,r) => a + r.fgts, 0),
+    prov:      agg.reduce((a,r) => a + r.prov,      0),
+    liq:       agg.reduce((a,r) => a + r.liq,       0),
+    inss:      agg.reduce((a,r) => a + r.inss,      0),
+    fgts:      agg.reduce((a,r) => a + r.fgts,      0),
+    rescTotal: agg.reduce((a,r) => a + r.rescTotal,  0),
+    liqR:      agg.reduce((a,r) => a + r.liqR,       0),
+    multR:     agg.reduce((a,r) => a + r.multR,      0),
+    fgtsR:     agg.reduce((a,r) => a + r.fgtsR,      0),
+    nDes:      agg.reduce((a,r) => a + r.nDes,       0),
   };
 
   const redeCard = `
@@ -2968,7 +2987,7 @@ function buildFolhaComparativo() {
         <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--empresa);letter-spacing:.04em">REDE</div>
         <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Consolidado — todas as lojas</div>
       </div>
-      <div class="rede-inner-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      <div class="rede-inner-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">
         <div style="background:var(--surface);border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
           <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Proventos brutos</div>
           <div class="rede-val" style="font-family:monospace;font-weight:700;font-size:16px;color:var(--text)">${fmt(rede.prov)}</div>
@@ -2988,6 +3007,11 @@ function buildFolhaComparativo() {
           <div class="rede-val" style="font-family:monospace;font-weight:700;font-size:16px;color:var(--yellow)">${fmt(rede.fgts)}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:4px">Encargo: ${rede.prov ? ((rede.inss+rede.fgts)/rede.prov*100).toFixed(1)+'% (INSS+FGTS)' : '—'}</div>
         </div>
+        <div style="background:rgba(239,68,68,.08);border-radius:10px;padding:12px 14px;border:1px solid rgba(239,68,68,.2)">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px">Custo Rescisão</div>
+          <div class="rede-val" style="font-family:monospace;font-weight:700;font-size:16px;color:var(--red)">${fmt(rede.rescTotal)}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">${rede.nDes} deslig. · multa ${fmt(rede.multR)}</div>
+        </div>
       </div>
     </div>`;
 
@@ -3002,6 +3026,27 @@ function buildFolhaComparativo() {
         <span class="folha-row-label">% líq./prov.</span>
         <span class="folha-row-val">${r.prov ? (r.liq/r.prov*100).toFixed(1) + '%' : '—'}</span>
       </div>
+      <div class="folha-row" style="margin-top:8px;border-top:1px solid rgba(239,68,68,.2);padding-top:8px">
+        <span class="folha-row-label" style="color:var(--red)">Custo rescisão</span>
+        <span class="folha-row-val red">${fmtOr0(r.rescTotal)}</span>
+      </div>
+      ${r.rescTotal > 0 ? `
+      <div class="folha-row" style="margin-top:2px">
+        <span class="folha-row-label" style="font-size:10px">Liq. rescisão</span>
+        <span class="folha-row-val" style="font-size:11px">${fmtOr0(r.liqR)}</span>
+      </div>
+      <div class="folha-row">
+        <span class="folha-row-label" style="font-size:10px">Multa Art.480</span>
+        <span class="folha-row-val" style="font-size:11px">${fmtOr0(r.multR)}</span>
+      </div>
+      <div class="folha-row">
+        <span class="folha-row-label" style="font-size:10px">FGTS rescisório</span>
+        <span class="folha-row-val" style="font-size:11px">${fmtOr0(r.fgtsR)}</span>
+      </div>
+      <div class="folha-row">
+        <span class="folha-row-label" style="font-size:10px">Desligamentos</span>
+        <span class="folha-row-val" style="font-size:11px">${r.nDes}</span>
+      </div>` : ''}
     </div>`).join('');
 }
 
